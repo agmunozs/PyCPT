@@ -48,18 +48,17 @@ def pltdomain(loni,lone,lati,late,title):
         title: title
     """
     ax = plt.axes(projection=ccrs.PlateCarree())
-    
     ax.set_extent([loni,lone,lati,late])
 
     # Put a background image on for nice sea rendering.
     ax.stock_img()
 
     # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
-    #states_provinces = feature.NaturalEarthFeature(
-    #    category='cultural',
-    #    name='admin_1_states_provinces_lines',
-    #    scale='50ml',
-    #    facecolor='none')
+    states_provinces = feature.NaturalEarthFeature(
+        category='cultural',
+        name='admin_1_states_provinces_lines',
+        scale='50ml',
+        facecolor='none')
 
     ax.add_feature(feature.LAND)
     ax.add_feature(feature.COASTLINE)
@@ -123,7 +122,7 @@ def pltscore(score,loni,lone,lati,late):
     if score == 'Spearman':
         levels = np.linspace(-1, 1, 9)
         
-    CS=plt.contourf(np.linspace(wlo2, elo2, num=H), np.linspace(sla2, nla2, num=W), var, 
+    CS=plt.contourf(np.linspace(loni, lone, num=H), np.linspace(lati, late, num=W), var, 
             levels = levels,
             cmap=plt.cm.bwr,
             extend='both') #,transform=proj)
@@ -179,5 +178,205 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, key, w
     #curl -g -k -b '__dlauth_id='$key'' ''$url'' > modelfcst_precip_fday${fday}.tsv
     return url
     
-
+def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,training_season,ntrain,rainfall_frequency,grads_plot):
+        """Function to write CPT namelist file
     
+        PARAMETERS
+        ----------
+            loni: wester longitude
+            lone: eastern longitude
+            lati: southern latitude
+            late: northern latitude
+            title: title
+        """
+        # Set up CPT parameter file
+        f=open("params","w+")
+        # Opens CCA
+        f.write("611\n")
+        
+        # Opens X input file
+        f.write("1\n")
+        file='../input/model_precip_'+mon+'_wk'+str(wk)+'.tsv\n'
+        f.write(file)
+        # Nothernmost latitude
+        f.write(str(nla1)+'\n')
+        # Southernmost latitude
+        f.write(str(sla1)+'\n')
+        # Westernmost longitude
+        f.write(str(wlo1)+'\n')
+        # Easternmost longitude
+        f.write(str(elo1)+'\n')
+        # Minimum number of X modes
+        f.write("1\n")
+        # Maximum number of X modes
+        f.write("10\n")
+
+        # Opens forecast (X) file
+        f.write("3\n")
+        file='../input/modelfcst_precip_'+mon+'_fday'+str(fday)+'_wk'+str(wk)+'.tsv\n'
+        f.write(file)
+
+        # Opens Y input file
+        f.write("2\n")
+        if rainfall_frequency:
+            file='../input/obs_RFREQ_'+mon+'_wk'+str(wk)+'.tsv\n'
+        else:
+            file='../input/obs_precip_'+mon+'_wk'+str(wk)+'.tsv\n'         
+        f.write(file)
+        # Nothernmost latitude
+        f.write(str(nla2)+'\n')
+        # Southernmost latitude
+        f.write(str(sla2)+'\n')
+        # Westernmost longitude
+        f.write(str(wlo2)+'\n')
+        # Easternmost longitude
+        f.write(str(elo2)+'\n')
+        # Minimum number of Y modes
+        f.write("1\n")
+        # Maximum number of Y modes
+        f.write("10\n")
+
+        # Minimum number of CCA modes
+        f.write("1\n")
+        # Maximum number of CCAmodes
+        f.write("5\n")
+
+        # X training period
+        f.write("4\n")
+        # First year of X training period
+        f.write("1901\n")
+        # Y training period
+        f.write("5\n")
+        # First year of Y training period
+        f.write("1901\n")
+
+        # Goodness index
+        f.write("531\n")
+        # Kendall's tau
+        f.write("3\n")
+
+        # Option: Length of training period
+        f.write("7\n")
+        # Length of training period 
+        f.write(str(ntrain)+'\n')
+        #   %store 55 >> params
+        # Option: Length of cross-validation window
+        f.write("8\n")
+        # Enter length
+        f.write("3\n")
+
+        # Turn ON Transform predictand data
+        f.write("541\n")
+        # Turn ON zero bound for Y data  (automatically on if variable is precip)
+        #%store 542 >> params
+        # Turn ON synchronous predictors
+        f.write("545\n")
+        # Turn ON p-values for masking maps
+        #%store 561 >> params
+
+        ### Missing value options
+        f.write("544\n")
+        # Missing value X flag:
+        blurb='-999\n'
+        f.write(blurb)
+        # Maximum % of missing values
+        f.write("10\n")
+        # Maximum % of missing gridpoints
+        f.write("10\n")
+        # Number of near-neighbors
+        f.write("1\n")
+        # Missing value replacement : best-near-neighbors
+        f.write("4\n")
+        # Y missing value flag
+        blurb='-999\n'
+        f.write(blurb)
+        # Maximum % of missing values
+        f.write("10\n")
+        # Maximum % of missing stations
+        f.write("10\n")
+        # Number of near-neighbors
+        f.write("1\n")
+        # Best near neighbor
+        f.write("4\n")
+
+        #554 # Transformation seetings
+        #1   #Empirical distribution
+
+        #######BUILD MODEL AND VALIDATE IT  !!!!!
+
+        if grads_plot:
+        # select output format
+            f.write("131\n")
+        # GrADS format
+            f.write("3\n")
+        # NB: Default output format is CPTv10 format
+
+        # save goodness index
+        f.write("112\n")
+        file='../output/'+fprefix+'_Kendallstau_'+training_season+'_wk'+str(wk)+'\n'
+        f.write(file)
+
+        # Cross-validation
+        f.write("311\n")
+
+        # cross-validated skill maps
+        f.write("413\n")
+        # save Spearmans Correlation
+        f.write("2\n")
+        file='../output/'+fprefix+'_Spearman_'+training_season+'_wk'+str(wk)+'\n'
+        f.write(file)
+
+        # cross-validated skill maps
+        f.write("413\n")
+        # save 2AFC score
+        f.write("3\n")
+        file='../output/'+fprefix+'_2AFC_'+training_season+'_wk'+str(wk)+'\n'
+        f.write(file)
+
+        # cross-validated skill maps
+        f.write("413\n")
+        # save RocBelow score
+        f.write("10\n")
+        file='../output/'+fprefix+'_RocBelow_'+training_season+'_wk'+str(wk)+'\n'
+        f.write(file)
+
+        # cross-validated skill maps
+        f.write("413\n")
+        # save RocAbove score
+        f.write("11\n")
+        file='../output/'+fprefix+'_RocAbove_'+training_season+'_wk'+str(wk)+'\n'
+        f.write(file)
+
+        #######FORECAST(S)  !!!!!
+        # Probabilistic (3 categories) maps
+        f.write("455\n")
+        # Output results
+        f.write("111\n")
+        # Forecast probabilities
+        f.write("501\n")
+        file='../output/'+fprefix+'_CCAFCST_PROB_train_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+        f.write(file)
+        #502 # Forecast odds
+        #Exit submenu
+        f.write("0\n")
+    
+        # Compute deterministc values and prediction limits
+        f.write("454\n")
+        # Output results
+        f.write("111\n")
+        # Forecast values
+        f.write("511\n")
+        file='../output/'+fprefix+'_CCAFCST_values_train_'+training_season+'_'+mon+'_'+str(fday)+'_wk'+str(wk)+'\n'
+        f.write(file)
+        #502 # Forecast odds
+        #Exit submenu
+        f.write("0\n")   
+
+        # Stop saving  (not needed in newest version of CPT)
+
+        # Exit
+        f.write("0\n")
+        f.write("0\n")
+        f.write("0\n")
+
+        f.close()
