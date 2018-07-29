@@ -36,6 +36,19 @@ def download_data(url, authkey, outfile, force_download=False):
         
     return model
 
+def brazil_states(projection=ccrs.PlateCarree()):
+    fig, ax = plt.subplots(figsize=(8, 6), subplot_kw=dict(projection=projection))
+    ax.set_extent([-82, -32, -45, 10])
+    ax.stock_img()
+    ax.add_feature(LAND)
+    ax.add_feature(COASTLINE)
+    gl = ax.gridlines(draw_labels=True)
+    gl.xlabels_top = False
+    gl.ylabels_right = False
+    gl.xformatter = LONGITUDE_FORMATTER
+    gl.yformatter = LATITUDE_FORMATTER
+    return fig, ax
+    
 def pltdomain(loni,lone,lati,late,title):
     """A simple plot function for the geographical domain
     
@@ -47,22 +60,21 @@ def pltdomain(loni,lone,lati,late,title):
         late: northern latitude
         title: title
     """
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    fig, ax = plt.subplots(figsize=(8,6), subplot_kw=dict(projection=ccrs.PlateCarree()))
     ax.set_extent([loni,lone,lati,late])
 
     # Put a background image on for nice sea rendering.
     ax.stock_img()
 
-    # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+    #Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
     states_provinces = feature.NaturalEarthFeature(
         category='cultural',
-        name='admin_1_states_provinces_lines',
-        scale='50ml',
+        name='admin_1_states_provinces_shp',
+        scale='10m',
         facecolor='none')
-
+                             
     ax.add_feature(feature.LAND)
     ax.add_feature(feature.COASTLINE)
-    #ax.add_feature(states_provinces, edgecolor='gray')
     ax.set_title(title)
     pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                   linewidth=2, color='gray', alpha=0.5, linestyle='--')
@@ -70,10 +82,11 @@ def pltdomain(loni,lone,lati,late,title):
     pl.ylabels_left = False
     pl.xformatter = LONGITUDE_FORMATTER
     pl.yformatter = LATITUDE_FORMATTER
+    ax.add_feature(states_provinces, edgecolor='gray')
+    
+    return ax
 
-    plt.show()
-
-def pltscore(score,loni,lone,lati,late):
+def pltmap(score,loni,lone,lati,late):
     """A simple plot function for ploting the statistical score
     
     PARAMETERS
@@ -88,39 +101,47 @@ def pltscore(score,loni,lone,lati,late):
     H = 9
     W = 5
     Record = np.dtype(('float32', H*W))
-    A = np.fromfile('../output/RFREQ_'+score+'_Jun-Aug_wk1.dat',dtype=Record, count=1).astype('float')
-    var = A[0].reshape((H, W), order='F')
-    var = np.transpose(var)
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    fig, ax = plt.subplots(figsize=(8,6), subplot_kw=dict(projection=ccrs.PlateCarree()))
     ax.set_extent([loni,lone,lati,late])
 
-    # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
-    #states_provinces = feature.NaturalEarthFeature(
-    #    category='cultural',
-    #    name='admin_1_states_provinces_lines',
-    #    scale='50ml',
-    #    facecolor='none')
-
+    #Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+    states_provinces = feature.NaturalEarthFeature(
+        category='cultural',
+        name='admin_1_states_provinces_shp',
+        scale='10m',
+        facecolor='none')
+                             
     ax.add_feature(feature.LAND)
     ax.add_feature(feature.COASTLINE)
-    #ax.add_feature(states_provinces, edgecolor='gray')
     ax.set_title(score)
     pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                   linewidth=2, color='gray', alpha=0.5, linestyle='--')
     pl.xlabels_top = False
+    pl.ylabels_left = True
     pl.ylabels_right = False
     pl.xformatter = LONGITUDE_FORMATTER
     pl.yformatter = LATITUDE_FORMATTER
+    ax.add_feature(states_provinces, edgecolor='gray')
     
     #add if for levels, depending on each score
     if score == '2AFC':
         levels = np.linspace(0, 100, 9)
+        A = np.fromfile('../output/RFREQ_'+score+'_Jun-Aug_wk1.dat',dtype=Record, count=1).astype('float')
     if score == 'RocAbove':
         levels = np.linspace(0, 1, 9)
+        A = np.fromfile('../output/RFREQ_'+score+'_Jun-Aug_wk1.dat',dtype=Record, count=1).astype('float')
     if score == 'RocBelow':
         levels = np.linspace(0, 1, 9)
+        A = np.fromfile('../output/RFREQ_'+score+'_Jun-Aug_wk1.dat',dtype=Record, count=1).astype('float')
     if score == 'Spearman':
         levels = np.linspace(-1, 1, 9)
+        A = np.fromfile('../output/RFREQ_'+score+'_Jun-Aug_wk1.dat',dtype=Record, count=1).astype('float')
+    if score == 'CCAFCST_PROB':
+        levels = np.linspace(0, 100, 9)
+        A = np.fromfile('../output/RFREQ_'+score+'_train_Jun-Aug_Jul16_wk1.dat',dtype=Record, count=1).astype('float')
+        
+    var = A[0].reshape((H, W), order='F')
+    var = np.transpose(var)
         
     CS=plt.contourf(np.linspace(loni, lone, num=H), np.linspace(lati, late, num=W), var, 
             levels = levels,
