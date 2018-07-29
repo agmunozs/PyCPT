@@ -3,7 +3,8 @@ Python interface for CPT
 
 This version still requires:
 + Plot the figures in panels
-+ Add forecast figures (trivial with the plotscore function)
++ Plot three categories in probabilistic forecast maps
++ Automate the reading of the grads file dimensions
 
 Instructions:
 1. Download and compile CPT (https://iri.columbia.edu/cpt). Take note of the PATH to CPT.
