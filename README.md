@@ -4,8 +4,6 @@ Python interface for CPT
 This version still requires:
 + Plot the figures in panels
 + Plot three categories in probabilistic forecast maps
-+ Automate the reading of the grads file dimensions
-+ Automate the reading of the weeks (wk[L]) in plots 
 
 Instructions:
 1. Download and compile CPT (https://iri.columbia.edu/cpt). Take note of the PATH to CPT.
