@@ -3,7 +3,6 @@ Python interface for CPT
 
 This version still requires:
 + Plot the figures in panels
-+ Plot three categories in probabilistic forecast maps
 + Add options to use different obs datasets and different S2S models
 
 Instructions:
