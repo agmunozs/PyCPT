@@ -98,10 +98,10 @@ def pltmap(score,loni,lone,lati,late,fprefix,training_season, mon, fday, wk):
         title: title
     """
     #Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-    with open('../output/RFREQ_2AFC_Jun-Aug_wk'+str(wk)+'.ctl', "r") as fp:
+    with open('../output/RFREQ_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
     	for line in lines_that_contain("XDEF", fp):
         	W = int(line.split()[1])
-    with open('../output/RFREQ_2AFC_Jun-Aug_wk'+str(wk)+'.ctl', "r") as fp:
+    with open('../output/RFREQ_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
     	for line in lines_that_contain("YDEF", fp):
         	H = int(line.split()[1])
     #Prepare to read grads binary file, prepare figure
@@ -278,7 +278,7 @@ def GetObs_RFREQ(day1, day2, mon, nday, key, week, wetday_threshold, nlag, train
     if force_download:
     	# calls curl to download data
     	#TRMM version:
-    	url='http://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.control/.sfc_precip/.tp/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag%5Daverage/S/(0000%201%20Jan%201999)/(0000%2031%20Dec%202010)/RANGEEDGES/L1/'+str(day1-1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/('+training_season+')/VALUES/S/'+str(hstep)+'/STEP/L1/S/add/0/RECHUNK//name//T/def/2/%7Bexch%5BL1/S%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/SOURCES/.NASA/.GES-DAAC/.TRMM_L3/.TRMM_3B42/.v7/.daily/.precipitation/T/(days%20since%201960-01-01)/streamgridunitconvert/T/(1%20Jan%201999)/(31%20Dec%202011)/RANGEEDGES/'+str(wetday_threshold)+'/flagge/T/'+str(nday)+'/runningAverage/'+str(nday)+'/mul/T/2/index/.T/SAMPLE/nip/dup/T/npts//I/exch/NewIntegerGRID/replaceGRID/dup/I/5/splitstreamgrid/%5BI2%5Daverage/sub/I/3/-1/roll/.T/replaceGRID/-999/setmissing_value/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/3001/ensotime/%3Agrid/use_as_grid/%5BX/Y%5D%5BT%5Dcptv10.tsv'
+    	url='http://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.control/.sfc_precip/.tp/S/-'+str(nlag-1)+'/1/0/shiftdatashort/%5BS_lag%5Daverage/S/(0000%201%20Jan%201999)/(0000%2031%20Dec%202010)/RANGEEDGES/L1/'+str(day1-1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/('+training_season+')/VALUES/S/'+str(hstep)+'/STEP/L1/S/add/0/RECHUNK//name//T/def/2/%7Bexch%5BL1/S%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/SOURCES/.NASA/.GES-DAAC/.TRMM_L3/.TRMM_3B42/.v7/.daily/.precipitation/X/0./1.5/360./GRID/Y/-50/1.5/50/GRID/T/(days%20since%201960-01-01)/streamgridunitconvert/T/(1%20Jan%201999)/(31%20Dec%202011)/RANGEEDGES/'+str(wetday_threshold)+'/flagge/T/'+str(nday)+'/runningAverage/'+str(nday)+'/mul/T/2/index/.T/SAMPLE/nip/dup/T/npts//I/exch/NewIntegerGRID/replaceGRID/dup/I/5/splitstreamgrid/%5BI2%5Daverage/sub/I/3/-1/roll/.T/replaceGRID/-999/setmissing_value/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/3001/ensotime/%3Agrid/use_as_grid/%5BX/Y%5D%5BT%5Dcptv10.tsv'
     	print("\n Obs (Freq) data URL: \n\n "+url)
     	get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > obs_RFREQ_"+mon+"_wk"+str(week)+".tsv")
     	#curl -g -k -b '__dlauth_id='$key'' ''$url'' > obs_precip_${mo}.tsv
@@ -312,8 +312,8 @@ def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,traini
         f.write("611\n")
         
         # First, ask CPT to stop if error is encountered
-        f.write("571\n")
-        f.write("3\n")
+        #f.write("571\n")
+        #f.write("3\n")
         
         # Opens X input file
         f.write("1\n")
