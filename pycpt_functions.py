@@ -98,10 +98,10 @@ def pltmap(score,loni,lone,lati,late,fprefix,training_season, mon, fday, wk):
         title: title
     """
     #Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-    with open('../output/RFREQ_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+    with open('../output/'+fprefix+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
     	for line in lines_that_contain("XDEF", fp):
         	W = int(line.split()[1])
-    with open('../output/RFREQ_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+    with open('../output/'+fprefix+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
     	for line in lines_that_contain("YDEF", fp):
         	H = int(line.split()[1])
     #Prepare to read grads binary file, prepare figure
@@ -208,10 +208,13 @@ def pltmap(score,loni,lone,lati,late,fprefix,training_season, mon, fday, wk):
     		pl.xformatter = LONGITUDE_FORMATTER
     		pl.yformatter = LATITUDE_FORMATTER
     		ax.add_feature(states_provinces, edgecolor='gray')
+    		ax.set_adjustable('box')
+    		#ax.set_aspect('auto',adjustable='datalim',anchor='C')
     		CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
     			levels = levels,
     			cmap=plt.cm.bwr,
-    			extend='both') 
+    			extend='both')
+    		plt.gca().set_rasterization_zorder(-1)
     		cbar = plt.colorbar(CS)	
     	#plt.subplots_adjust(hspace=0)
     	#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
