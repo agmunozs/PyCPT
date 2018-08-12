@@ -1,9 +1,9 @@
-# PyCPT
+# PyCPT - v1.1
 Python interface for CPT
 
 This version still requires:
 + Plot the figures in panels
-+ Add options to use different obs datasets and different S2S models via dictionary.
++ Add options to use different obs datasets via dictionary.
 
 Instructions:
 1. Download and compile CPT (https://iri.columbia.edu/cpt). Take note of the PATH to CPT.
