@@ -34,6 +34,7 @@ def download_data(url, authkey, outfile, force_download=False):
 	"""A smart function to download data from IRI Data Library
 	If the data can be read in and force_download is False, will read from file
 	Otherwise will download from IRIDL and then read from file
+	Written by J Doss-Gollin (2018)
 	
 	PARAMETERS
 	----------
@@ -83,7 +84,7 @@ def PrepFiles(rainfall_frequency,wlo1, wlo2,elo1, elo2,sla1, sla2,nla1, nla2, da
 		print('Forecasts file ready to go')
 		print('----------------------------------------------')
 	
-def pltdomain(loni,lone,lati,late,title):
+def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
 	"""A simple plot function for the geographical domain
 	
 	PARAMETERS
@@ -94,31 +95,39 @@ def pltdomain(loni,lone,lati,late,title):
 		late: northern latitude
 		title: title
 	"""
-	fig, ax = plt.subplots(figsize=(8,6), subplot_kw=dict(projection=ccrs.PlateCarree()))
-	ax.set_extent([loni,lone,lati,late])
-
-	# Put a background image on for nice sea rendering.
-	ax.stock_img()
-
 	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 	states_provinces = feature.NaturalEarthFeature(
 		category='cultural',
 		name='admin_1_states_provinces_shp',
 		scale='10m',
 		facecolor='none')
+		
+	fig = plt.subplots(figsize=(15,15), subplot_kw=dict(projection=ccrs.PlateCarree()))
+	loni = [loni1,loni2]
+	lati = [lati1,lati2]
+	lone = [lone1,lone2]
+	late = [late1,late2]
+	title = ['Predictor', 'Predictand']
+
+	for i in range(2):
+
+		ax = plt.subplot(1, 2, i+1, projection=ccrs.PlateCarree())
+		ax.set_extent([loni[i],lone[i],lati[i],late[i]], ccrs.PlateCarree())
+
+		# Put a background image on for nice sea rendering.
+		ax.stock_img()
 							 
-	ax.add_feature(feature.LAND)
-	ax.add_feature(feature.COASTLINE)
-	ax.set_title(title)
-	pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+		ax.add_feature(feature.LAND)
+		ax.add_feature(feature.COASTLINE)
+		ax.set_title(title[i]+" domain")
+		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
 				  linewidth=2, color='gray', alpha=0.5, linestyle='--')
-	pl.xlabels_top = False
-	pl.ylabels_left = False
-	pl.xformatter = LONGITUDE_FORMATTER
-	pl.yformatter = LATITUDE_FORMATTER
-	ax.add_feature(states_provinces, edgecolor='gray')
-	
-	return ax
+		pl.xlabels_top = False
+		pl.ylabels_left = False
+		pl.xformatter = LONGITUDE_FORMATTER
+		pl.yformatter = LATITUDE_FORMATTER
+		ax.add_feature(states_provinces, edgecolor='gray')
+	plt.show()
 
 def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
 	"""A simple plot function for ploting the statistical score
