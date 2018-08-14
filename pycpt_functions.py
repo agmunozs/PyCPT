@@ -118,7 +118,7 @@ def pltdomain(loni,lone,lati,late,title):
 	
 	return ax
 
-def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, wk):
+def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
 	"""A simple plot function for ploting the statistical score
 	
 	PARAMETERS
@@ -130,145 +130,214 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, w
 		late: northern latitude
 		title: title
 	"""
-	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
-		for line in lines_that_contain("XDEF", fp):
-			W = int(line.split()[1])
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
-		for line in lines_that_contain("YDEF", fp):
-			H = int(line.split()[1])
-	#Prepare to read grads binary file, prepare figure
-	Record = np.dtype(('float32', H*W))
 	
-	fig, ax = plt.subplots(figsize=(8,6), subplot_kw=dict(projection=ccrs.PlateCarree()))
-	ax.set_extent([loni,lone,lati,late])
+	plt.figure(figsize=(20,15))
+	
+	for L in range(nwk):
+		wk=L+1
+		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
+		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+			for line in lines_that_contain("XDEF", fp):
+				W = int(line.split()[1])
+		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+			for line in lines_that_contain("YDEF", fp):
+				H = int(line.split()[1])
+				
+		#Prepare to read grads binary file, prepare figure
+		Record = np.dtype(('float32', H*W))
+		
+		ax = plt.subplot(2, 2, wk, projection=ccrs.PlateCarree())
+		ax.set_extent([loni,lone,lati,late], ccrs.PlateCarree())
 
-	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
-	states_provinces = feature.NaturalEarthFeature(
-		category='cultural',
-		name='admin_1_states_provinces_shp',
-		scale='10m',
-		facecolor='none')
+		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+		states_provinces = feature.NaturalEarthFeature(
+			category='cultural',
+			name='admin_1_states_provinces_shp',
+			scale='10m',
+			facecolor='none')
 							 
-	ax.add_feature(feature.LAND)
-	ax.add_feature(feature.COASTLINE)
-	ax.set_title(score)
-	pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+		ax.add_feature(feature.LAND)
+		ax.add_feature(feature.COASTLINE)
+		ax.set_title(score+' for Week '+str(wk))
+		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
 				  linewidth=2, color='gray', alpha=0.5, linestyle='--')
-	pl.xlabels_top = False
-	pl.ylabels_left = True
-	pl.ylabels_right = False
-	pl.xformatter = LONGITUDE_FORMATTER
-	pl.yformatter = LATITUDE_FORMATTER
-	ax.add_feature(states_provinces, edgecolor='gray')
-	ax.set_ybound(lower=lati, upper=late)
-	#ax.set_xlim(cartopy_xlim(smooth_slp))
-	#ax.set_ylim(cartopy_ylim(smooth_slp))
+		pl.xlabels_top = False
+		pl.ylabels_left = True
+		pl.ylabels_right = False
+		pl.xformatter = LONGITUDE_FORMATTER
+		pl.yformatter = LATITUDE_FORMATTER
+		ax.add_feature(states_provinces, edgecolor='gray')
+		ax.set_ybound(lower=lati, upper=late)
 	
-	#define colorbars, depending on each score	--This can be easily written as a function
-	if score == '2AFC':
-		levels = np.linspace(0, 100, 9)
-		A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
-		var = A[0].reshape((W, H), order='F')
-		var = np.transpose(var)
-		CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
-			levels = levels,
-			cmap=plt.cm.bwr,
-			extend='both') #,transform=proj)
-		cbar = plt.colorbar(CS)
-		plt.show()
-	if score == 'RocAbove':
-		levels = np.linspace(0, 1, 9)
-		A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
-		var = A[0].reshape((W, H), order='F')
-		var = np.transpose(var)
-		CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
-			levels = levels,
-			cmap=plt.cm.bwr,
-			extend='both') #,transform=proj)
-		cbar = plt.colorbar(CS)
-		plt.show()
-	if score == 'RocBelow':
-		levels = np.linspace(0, 1, 9)
-		A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
-		var = A[0].reshape((W, H), order='F')
-		var = np.transpose(var)
-		CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
-			levels = levels,
-			cmap=plt.cm.bwr,
-			extend='both') #,transform=proj)
-		cbar = plt.colorbar(CS)
-		plt.show()
-	if score == 'Spearman':
-		levels = np.linspace(-1, 1, 9)
-		A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
-		var = A[0].reshape((W, H), order='F')
-		var = np.transpose(var)
-		CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
-			levels = levels,
-			cmap=plt.cm.bwr,
-			extend='both') #,transform=proj)
-		cbar = plt.colorbar(CS)
-		plt.show()
-	if score == 'Pearson':
-		levels = np.linspace(-1, 1, 9)
-		A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
-		var = A[0].reshape((W, H), order='F')
-		var = np.transpose(var)
-		CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
-			levels = levels,
-			cmap=plt.cm.bwr,
-			extend='both') #,transform=proj)
-		cbar = plt.colorbar(CS)
-		plt.show()
-	if score == 'CCAFCST_V':
-		levels = np.linspace(-1, 1, 9)
-		A = np.fromfile('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
-		var = A[0].reshape((W, H), order='F')
-		var = np.transpose(var)
-		CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
-			levels = levels,
-			cmap=plt.cm.bwr,
-			extend='both') #,transform=proj)
-		ax.set_title("Deterministic forecast")
-		cbar = plt.colorbar(CS)
-		plt.show()
+		#define colorbars, depending on each score	--This can be easily written as a function
+		if score == '2AFC':
+			levels = np.linspace(0, 100, 9)
+			A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
+			var = A[0].reshape((W, H), order='F')
+			var = np.transpose(var)
+			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
+				levels = levels,
+				cmap=plt.cm.bwr, rasterized=True,
+				extend='both') #,transform=proj)
+
+		if score == 'RocAbove':
+			levels = np.linspace(0, 1, 9)
+			A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
+			var = A[0].reshape((W, H), order='F')
+			var = np.transpose(var)
+			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
+				levels = levels,
+				cmap=plt.cm.bwr, rasterized=True,
+				extend='both') #,transform=proj)
+
+		if score == 'RocBelow':
+			levels = np.linspace(0, 1, 9)
+			A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
+			var = A[0].reshape((W, H), order='F')
+			var = np.transpose(var)
+			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
+				levels = levels,
+				cmap=plt.cm.bwr, rasterized=True,
+				extend='both') #,transform=proj)
+
+		if score == 'Spearman':
+			levels = np.linspace(-1, 1, 9)
+			A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
+			var = A[0].reshape((W, H), order='F')
+			var = np.transpose(var)
+			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
+				levels = levels,
+				cmap=plt.cm.bwr, rasterized=True,
+				extend='both') #,transform=proj)
+
+		if score == 'Pearson':
+			levels = np.linspace(-1, 1, 9)
+			A = np.fromfile('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
+			var = A[0].reshape((W, H), order='F')
+			var = np.transpose(var)
+			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
+				levels = levels,
+				cmap=plt.cm.bwr, rasterized=True,
+				extend='both') #,transform=proj)
+
+		if score == 'CCAFCST_V':
+			levels = np.linspace(-1, 1, 9)
+			A = np.fromfile('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
+			var = A[0].reshape((W, H), order='F')
+			var = np.transpose(var)
+			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
+				levels = levels,
+				cmap=plt.cm.bwr, rasterized=True,
+				extend='both') #,transform=proj)
+			ax.set_title("Deterministic forecast for Week "+str(wk))
+		
+		if score == 'CCAFCST_P':
+			levels = np.linspace(0, 100, 31)
+			B = np.fromfile('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat',dtype=Record, count=-1).astype('float32')
+			tit=['Below Normal','Normal','Above Normal']
+			for i in range(3):
+				#fig, ax = plt.subplots(figsize=(8,6), subplot_kw=dict(projection=ccrs.PlateCarree()))
+				#ax.set_extent([loni,lone,lati,late])
+				var = np.transpose(B[i].reshape((W, H), order='F'))
+				ax2=plt.subplot(1, 3, i+1,projection=ccrs.PlateCarree())
+				ax2.set_title("Probabilistic forecast: "+tit[i]+" - Week "+str(wk))
+				ax2.add_feature(feature.LAND)
+				ax2.add_feature(feature.COASTLINE)
+				ax2.set_ybound(lower=lati, upper=late)
+				pl2=ax2.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+					linewidth=2, color='gray', alpha=0.5, linestyle='--')
+				pl2.xlabels_top = False
+				pl2.ylabels_left = True
+				pl2.ylabels_right = False
+				pl2.xformatter = LONGITUDE_FORMATTER
+				pl2.yformatter = LATITUDE_FORMATTER
+				ax2.add_feature(states_provinces, edgecolor='gray')
+				ax2.set_adjustable('box')
+				ax2.set_aspect('auto',adjustable='datalim',anchor='C')
+				CS=ax2.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
+					levels = levels,
+					cmap=plt.cm.bwr, rasterized=True,
+					extend='both')
+				plt.show(block=False)
+				#plt.gca() #.set_rasterization_zorder(-1)
+
+		plt.subplots_adjust(hspace=0)
+		#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
+		#cbar_ax = plt.add_axes([0.85, 0.15, 0.05, 0.7])
+		#plt.tight_layout()
+		plt.subplots_adjust(bottom=0.15, top=0.9)
+		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
+		plt.colorbar(CS,cax=cax, orientation='horizontal')
+		
+		
+def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
+	"""A simple plot function for ploting probabilistic forecasts
 	
-	if score == 'CCAFCST_P':
+	PARAMETERS
+	----------
+		score: the score
+		loni: wester longitude
+		lone: eastern longitude
+		lati: southern latitude
+		late: northern latitude
+		title: title
+	"""
+	score = 'CCAFCST_P'
+
+	plt.figure(figsize=(15,15))
+	
+	for L in range(nwk):
+		wk=L+1
+		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
+		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+			for line in lines_that_contain("XDEF", fp):
+				W = int(line.split()[1])
+		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+			for line in lines_that_contain("YDEF", fp):
+				H = int(line.split()[1])
+				
+		#Prepare to read grads binary file, prepare figure
+		Record = np.dtype(('float32', H*W))
+		
+
+		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+		states_provinces = feature.NaturalEarthFeature(
+			category='cultural',
+			name='admin_1_states_provinces_shp',
+			scale='10m',
+			facecolor='none')
+							 
 		levels = np.linspace(0, 100, 31)
 		B = np.fromfile('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat',dtype=Record, count=-1).astype('float32')
 		tit=['Below Normal','Normal','Above Normal']
-		#plt.interactive('off')
 		for i in range(3):
-			fig, ax = plt.subplots(figsize=(8,6), subplot_kw=dict(projection=ccrs.PlateCarree()))
-			ax.set_extent([loni,lone,lati,late])
-			var = np.transpose(B[i].reshape((W, H), order='F'))
-			#plt.subplot(3, 1, i+1)
-			ax.set_title("Probabilistic forecast: "+tit[i])
-			ax.add_feature(feature.LAND)
-			ax.add_feature(feature.COASTLINE)
-			ax.set_ybound(lower=lati, upper=late)
-			pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-				linewidth=2, color='gray', alpha=0.5, linestyle='--')
-			pl.xlabels_top = False
-			pl.ylabels_left = True
-			pl.ylabels_right = False
-			pl.xformatter = LONGITUDE_FORMATTER
-			pl.yformatter = LATITUDE_FORMATTER
-			ax.add_feature(states_provinces, edgecolor='gray')
-			ax.set_adjustable('box')
-			#ax.set_aspect('auto',adjustable='datalim',anchor='C')
-			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
-				levels = levels,
-				cmap=plt.cm.bwr,
-				extend='both')
-			plt.gca().set_rasterization_zorder(-1)
-			cbar = plt.colorbar(CS) 
-		#plt.subplots_adjust(hspace=0)
-		#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
-			plt.show()
-
-
+				var = np.transpose(B[i].reshape((W, H), order='F'))
+				ax2=plt.subplot(nwk, 3, (L*3)+(i+1),projection=ccrs.PlateCarree())
+				ax2.set_title("Category: "+tit[i]+" - Week "+str(wk))
+				ax2.add_feature(feature.LAND)
+				ax2.add_feature(feature.COASTLINE)
+				ax2.set_ybound(lower=lati, upper=late)
+				pl2=ax2.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+					linewidth=2, color='gray', alpha=0.5, linestyle='--')
+				pl2.xlabels_top = False
+				pl2.ylabels_left = True
+				pl2.ylabels_right = False
+				pl2.xformatter = LONGITUDE_FORMATTER
+				pl2.yformatter = LATITUDE_FORMATTER
+				ax2.add_feature(states_provinces, edgecolor='gray')
+				#ax2.set_adjustable('box')
+				#ax2.set_aspect('auto',adjustable='datalim',anchor='C')
+				CS=ax2.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
+					levels = levels,
+					cmap=plt.cm.bwr,
+					extend='both')
+				#plt.show(block=False)
+				
+	plt.subplots_adjust(hspace=0)
+	plt.subplots_adjust(bottom=0.15, top=0.9)
+	cax = plt.axes([0.2, 0.08, 0.6, 0.04])
+	plt.colorbar(CS,cax=cax, orientation='horizontal')
+		
 def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, training_season, hstep,model, force_download):  
 	# Download hindcasts (NCEP) 
 	# v3 url='http://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.perturbed/.sfc_precip/.tp/%5BM%5Daverage/3./mul/SOURCES/.ECMWF/.S2S/.NCEP/.reforecast/.control/.sfc_precip/.tp/add/4./div/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/L1/'+str(day1-1)+'/'+str(day2)+'/VALUES/%5BL1%5Ddifferences/S/('+mon+')/VALUES/S/7/STEP/dup/S/npts//I/exch/NewIntegerGRID/replaceGRID/dup/I/5/splitstreamgrid/%5BI2%5Daverage/sub/I/3/-1/roll/.S/replaceGRID/L1/S/add/0/RECHUNK//name//T/def/2/%7Bexch%5BL1/S%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/c://name//water_density/def/998/%28kg/m3%29/:c/div//mm/unitconvert//name/(tp)/def/grid://name/%28T%29/def//units/%28months%20since%201960-01-01%29/def//standard_name/%28time%29/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1960/ensotime/:grid/use_as_grid/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
