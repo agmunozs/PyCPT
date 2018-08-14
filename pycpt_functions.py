@@ -2,8 +2,10 @@
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and AW Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT 
 #To Do: (as Aug 15, 2018 -- AGM)
+#	+ Add a percentile threshold for dry days
+#	+ Deterministic forecast should re-adjust its colorbar range/units depending on the predictand used
 #	+ Simplify download functions: just one function, with the right arguments and dictionaries.
-#	+ Check Obs_RFREQ and Forecast_RFREQ
+#	+ Check Hindcasts and Forecast_RFREQ
 import os
 import xarray as xr
 import numpy as np
@@ -13,6 +15,8 @@ from cartopy import feature
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import warnings
+warnings.filterwarnings("ignore")
 
 def lines_that_equal(line_to_match, fp):
 	return [line for line in fp if line == line_to_match]
