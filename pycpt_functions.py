@@ -1,10 +1,8 @@
 #This is PyCPT_functions.py (version1.1) -- 11 Aug 2018
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and AW Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT 
-#To Do:
+#To Do: (as Aug 15, 2018 -- AGM)
 #	+ Simplify download functions: just one function, with the right arguments and dictionaries.
-#	+ No empty figure when plotting forecasts
-#	+ Plot figures in panels, and all similar plots organized per weeks
 #	+ Check Obs_RFREQ and Forecast_RFREQ
 import os
 import xarray as xr
@@ -177,8 +175,9 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(var)
 			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
 				levels = levels,
-				cmap=plt.cm.bwr, rasterized=True,
+				cmap=plt.cm.bwr,
 				extend='both') #,transform=proj)
+			label = '2AFC (%)'
 
 		if score == 'RocAbove':
 			levels = np.linspace(0, 1, 9)
@@ -187,8 +186,9 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(var)
 			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
 				levels = levels,
-				cmap=plt.cm.bwr, rasterized=True,
+				cmap=plt.cm.bwr,
 				extend='both') #,transform=proj)
+			label = 'ROC area'
 
 		if score == 'RocBelow':
 			levels = np.linspace(0, 1, 9)
@@ -197,8 +197,9 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(var)
 			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
 				levels = levels,
-				cmap=plt.cm.bwr, rasterized=True,
+				cmap=plt.cm.bwr,
 				extend='both') #,transform=proj)
+			label = 'ROC area'
 
 		if score == 'Spearman':
 			levels = np.linspace(-1, 1, 9)
@@ -207,8 +208,10 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(var)
 			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
 				levels = levels,
-				cmap=plt.cm.bwr, rasterized=True,
+				cmap=plt.cm.bwr,
 				extend='both') #,transform=proj)
+			label = 'Correlation'
+
 
 		if score == 'Pearson':
 			levels = np.linspace(-1, 1, 9)
@@ -217,49 +220,21 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(var)
 			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
 				levels = levels,
-				cmap=plt.cm.bwr, rasterized=True,
+				cmap=plt.cm.bwr,
 				extend='both') #,transform=proj)
+			label = 'Correlation'
 
 		if score == 'CCAFCST_V':
-			levels = np.linspace(-1, 1, 9)
+			levels = np.linspace(-2, 2, 9)
 			A = np.fromfile('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat',dtype=Record, count=1).astype('float')
 			var = A[0].reshape((W, H), order='F')
 			var = np.transpose(var)
 			CS=plt.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
 				levels = levels,
-				cmap=plt.cm.bwr, rasterized=True,
+				cmap=plt.cm.bwr,
 				extend='both') #,transform=proj)
 			ax.set_title("Deterministic forecast for Week "+str(wk))
-		
-		if score == 'CCAFCST_P':
-			levels = np.linspace(0, 100, 31)
-			B = np.fromfile('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat',dtype=Record, count=-1).astype('float32')
-			tit=['Below Normal','Normal','Above Normal']
-			for i in range(3):
-				#fig, ax = plt.subplots(figsize=(8,6), subplot_kw=dict(projection=ccrs.PlateCarree()))
-				#ax.set_extent([loni,lone,lati,late])
-				var = np.transpose(B[i].reshape((W, H), order='F'))
-				ax2=plt.subplot(1, 3, i+1,projection=ccrs.PlateCarree())
-				ax2.set_title("Probabilistic forecast: "+tit[i]+" - Week "+str(wk))
-				ax2.add_feature(feature.LAND)
-				ax2.add_feature(feature.COASTLINE)
-				ax2.set_ybound(lower=lati, upper=late)
-				pl2=ax2.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-					linewidth=2, color='gray', alpha=0.5, linestyle='--')
-				pl2.xlabels_top = False
-				pl2.ylabels_left = True
-				pl2.ylabels_right = False
-				pl2.xformatter = LONGITUDE_FORMATTER
-				pl2.yformatter = LATITUDE_FORMATTER
-				ax2.add_feature(states_provinces, edgecolor='gray')
-				ax2.set_adjustable('box')
-				ax2.set_aspect('auto',adjustable='datalim',anchor='C')
-				CS=ax2.contourf(np.linspace(loni, lone, num=W), np.linspace(lati, late, num=H), var, 
-					levels = levels,
-					cmap=plt.cm.bwr, rasterized=True,
-					extend='both')
-				plt.show(block=False)
-				#plt.gca() #.set_rasterization_zorder(-1)
+			label = 'Freq Rainy Days (days)'
 
 		plt.subplots_adjust(hspace=0)
 		#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
@@ -267,7 +242,9 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		#plt.tight_layout()
 		plt.subplots_adjust(bottom=0.15, top=0.9)
 		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
-		plt.colorbar(CS,cax=cax, orientation='horizontal')
+		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+		cbar.set_label(label) #, rotation=270)
+		plt.gca().set_rasterization_zorder(-1)
 		
 		
 def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
@@ -336,7 +313,10 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 	plt.subplots_adjust(hspace=0)
 	plt.subplots_adjust(bottom=0.15, top=0.9)
 	cax = plt.axes([0.2, 0.08, 0.6, 0.04])
-	plt.colorbar(CS,cax=cax, orientation='horizontal')
+	cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+	cbar.set_label('Probability (%)') #, rotation=270)
+	plt.gca().set_rasterization_zorder(-1)
+
 		
 def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, training_season, hstep,model, force_download):  
 	# Download hindcasts (NCEP) 
