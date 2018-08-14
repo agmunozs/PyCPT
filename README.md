@@ -2,7 +2,6 @@
 Python interface for CPT
 
 This version still requires:
-+ Plot the figures in panels
 + Add options to use different obs datasets via dictionary.
 
 Instructions:
