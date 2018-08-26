@@ -9,7 +9,7 @@
 #19 Aug 2018, AWR: Dictionary entry for GEFS added
 #To Do: (as Aug 15, 2018 -- AGM)
 #	+ Add a percentile threshold for dry days
-#	+ Deterministic forecast should re-adjust its colorbar range/units depending on the predictand used
+#	+ Make missing values transparent in plots, and deterministic forecast colorbar symmetric 
 #	+ Simplify download functions: just one function, with the right arguments and dictionaries.
 #	+ Check Hindcasts and Forecast_RFREQ
 import os
@@ -21,6 +21,7 @@ import pandas as pd
 import cartopy.crs as ccrs
 from cartopy import feature
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 from matplotlib.colors import LinearSegmentedColormap
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
@@ -38,6 +39,17 @@ def lines_that_start_with(string, fp):
 
 def lines_that_end_with(string, fp):
 	return [line for line in fp if line.endswith(string)]
+
+class MidpointNormalize(colors.Normalize):
+    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+        self.midpoint = midpoint
+        colors.Normalize.__init__(self, vmin, vmax, clip)
+
+    def __call__(self, value, clip=None):
+        # I'm ignoring masked values and all kinds of edge cases to make a
+        # simple example...
+        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        return np.ma.masked_array(np.interp(value, x, y))
 
 def download_data(url, authkey, outfile, force_download=False):
 	"""A smart function to download data from IRI Data Library
@@ -200,9 +212,10 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			#Missing value, as we want a dynamic colorbar
 			A[A==-999.]=np.nan
 			var = np.transpose(A.reshape((W, H), order='F'))
-			CS=plt.pcolormesh(np.linspace(loni, loni+W*0.25,num=W), np.linspace(lati, lati+H*0.25, num=H), var,
-				#vmin=-200,vmax=200,
-				cmap=plt.cm.bwr,
+			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
+				#vmin=-np.max(var),#vmax=np.max(var),
+				norm=MidpointNormalize(midpoint=0.),
+				cmap=plt.cm.BrBG,
 				transform=ccrs.PlateCarree())
 			ax.set_title("Deterministic forecast for Week "+str(wk))
 			if fprefix == 'RFREQ':
@@ -210,6 +223,8 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			elif fprefix == 'PRCP':
 				label = 'Rainfall anomaly (mm/week)'
 			f.close()
+			current_cmap = plt.cm.get_cmap()
+			current_cmap.set_bad(color='grey')
 		else:
 			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
 			f=open('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat','rb')
@@ -220,35 +235,35 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(A.reshape((W, H), order='F'))
 			#define colorbars, depending on each score	--This can be easily written as a function
 			if score == '2AFC':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*0.25,num=W), np.linspace(lati, lati+H*0.25, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
 				vmin=0,vmax=100,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = '2AFC (%)'
 
 			if score == 'RocAbove':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*0.25,num=W), np.linspace(lati, lati+H*0.25, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
 				vmin=0,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = 'ROC area'
 
 			if score == 'RocBelow':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*0.25,num=W), np.linspace(lati, lati+H*0.25, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
 				vmin=0,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = 'ROC area'
 
 			if score == 'Spearman':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*0.25,num=W), np.linspace(lati, lati+H*0.25, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
 				vmin=-1,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = 'Correlation'
 
 			if score == 'Pearson':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*0.25,num=W), np.linspace(lati, lati+H*0.25, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
 				vmin=-1,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
@@ -335,7 +350,7 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 				#ax2.set_xbound(lower=loni, upper=lone)
 				#ax2.set_adjustable('box')
 				#ax2.set_aspect('auto',adjustable='datalim',anchor='C')
-				CS=ax2.pcolormesh(np.linspace(loni, loni+W*0.25,num=W), np.linspace(lati, lati+H*0.25, num=H), var,
+				CS=ax2.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
 				vmin=0,vmax=100,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
