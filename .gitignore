@@ -1,0 +1,7 @@
+.IRIDLAUTH
+*.pdf
+*.ctl
+*.dat
+*.tsv
+.ipynb_checkpoints/PyCPT_v1.1-checkpoint.ipynb
+__pycache__/pycpt_functions.cpython-36.pyc
