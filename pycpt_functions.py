@@ -9,7 +9,7 @@
 #19 Aug 2018, AWR: Dictionary entry for GEFS added
 #To Do: (as Aug 15, 2018 -- AGM)
 #	+ Add a percentile threshold for dry days
-#	+ Make missing values transparent in plots, and deterministic forecast colorbar symmetric 
+#	+ Make missing values transparent in plots, and deterministic forecast colorbar symmetric
 #	+ Simplify download functions: just one function, with the right arguments and dictionaries.
 #	+ Check Hindcasts and Forecast_RFREQ
 import os
@@ -212,7 +212,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			#Missing value, as we want a dynamic colorbar
 			A[A==-999.]=np.nan
 			var = np.transpose(A.reshape((W, H), order='F'))
-			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
+			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				#vmin=-np.max(var),#vmax=np.max(var),
 				norm=MidpointNormalize(midpoint=0.),
 				cmap=plt.cm.BrBG,
@@ -235,35 +235,35 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(A.reshape((W, H), order='F'))
 			#define colorbars, depending on each score	--This can be easily written as a function
 			if score == '2AFC':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=0,vmax=100,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = '2AFC (%)'
 
 			if score == 'RocAbove':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=0,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = 'ROC area'
 
 			if score == 'RocBelow':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=0,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = 'ROC area'
 
 			if score == 'Spearman':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=-1,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = 'Correlation'
 
 			if score == 'Pearson':
-				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=-1,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
@@ -350,7 +350,7 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 				#ax2.set_xbound(lower=loni, upper=lone)
 				#ax2.set_adjustable('box')
 				#ax2.set_aspect('auto',adjustable='datalim',anchor='C')
-				CS=ax2.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati, lati+H*YD, num=H), var,
+				CS=ax2.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati,lati+H*YD, num=H), var,
 				vmin=0,vmax=100,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
