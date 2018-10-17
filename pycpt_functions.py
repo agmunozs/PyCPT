@@ -180,7 +180,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 				H = int(line.split()[1])
 				YD= float(line.split()[4])
 
-		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
+		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree()) 
 		ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
 
 		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
