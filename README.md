@@ -1,5 +1,5 @@
-# PyCPT - v1.1
-Python interface for the CPT command line version
+# PyCPT - v1.2
+Python interface for the CPT command line version, for sub-seasonal skill assessment and forecast experiments
 
 ## Authors
 Ángel G. Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
