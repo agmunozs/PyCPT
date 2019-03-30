@@ -1,22 +1,15 @@
-#This is PyCPT_functions.py (version1.2) -- 30 Mar 2019
+#This is PyCPT_functions.py (version1.1)
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and AW Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Log:
-
-#30 Mar 2019, AGM: added PCR option, CHIRPS as obs, flexible format plots,
-#					automatically uses retrospective for validation (due to
-#					the very high sample size). Solved problems related to
-#					masking missing values. ELR still has some problems
-#					(values are different from our R or Matlab codes -- working
-#					on it, so not included in this version).
 #25 Aug 2018, AGM: plots are now raster maps, added CPC obs,
 #				   fixed field shift due to sequential grads format in CPT,
 #				   automatic colobar limits and field name for deterministic forecast
 #24 Aug 2018, AWR: "obs_source" added for obs dataset selection (passed from main program)
 #19 Aug 2018, AWR: Dictionary entry for GEFS added
-#To Do: (as March 30th, 2019 -- AGM)
-#	+ ELR proceedure is not reproducing results obtained in R or Matlab
-#	+ Provide skill stats for user-defined regions
+#To Do: (as Aug 15, 2018 -- AGM)
+#	+ Add a percentile threshold for dry days
+#	+ Make missing values transparent in plots, and deterministic forecast colorbar symmetric
 #	+ Simplify download functions: just one function, with the right arguments and dictionaries.
 #	+ Check Hindcasts and Forecast_RFREQ
 import os
@@ -25,8 +18,6 @@ import struct
 import xarray as xr
 import numpy as np
 import pandas as pd
-from copy import copy
-from scipy.stats import t
 import cartopy.crs as ccrs
 from cartopy import feature
 import matplotlib.pyplot as plt
@@ -48,9 +39,6 @@ def lines_that_start_with(string, fp):
 
 def lines_that_end_with(string, fp):
 	return [line for line in fp if line.endswith(string)]
-
-def exceedprob(x,dof,lo,sc):
-	return t.sf(x, dof, loc=lo, scale=sc)*100
 
 class MidpointNormalize(colors.Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -166,7 +154,7 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
 	plt.show()
 
 def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
-	"""A simple function for ploting the statistical score
+	"""A simple plot function for ploting the statistical score
 
 	PARAMETERS
 	----------
@@ -215,21 +203,19 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		ax.add_feature(states_provinces, edgecolor='gray')
 		ax.set_ybound(lower=lati, upper=late)
 
-		if score == 'CCAFCST_V' or score == 'PCRFCST_V':
+		if score == 'CCAFCST_V':
 			f=open('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat','rb')
 			recl=struct.unpack('i',f.read(4))[0]
 			numval=int(recl/np.dtype('float32').itemsize)
 			#Now we read the field
 			A=np.fromfile(f,dtype='float32',count=numval)
+			#Missing value, as we want a dynamic colorbar
+			A[A==-999.]=np.nan
 			var = np.transpose(A.reshape((W, H), order='F'))
-			var[var==-999.]=np.nan #only sensible values
-			current_cmap = plt.cm.BrBG
-			current_cmap.set_bad('white',1.0)
-			current_cmap.set_under('white', 1.0)
 			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				#vmin=-np.max(var),#vmax=np.max(var),
 				norm=MidpointNormalize(midpoint=0.),
-				cmap=current_cmap,
+				cmap=plt.cm.BrBG,
 				transform=ccrs.PlateCarree())
 			ax.set_title("Deterministic forecast for Week "+str(wk))
 			if fprefix == 'RFREQ':
@@ -237,9 +223,8 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			elif fprefix == 'PRCP':
 				label = 'Rainfall anomaly (mm/week)'
 			f.close()
-			#current_cmap = plt.cm.get_cmap()
-			#current_cmap.set_bad(color='white')
-			#current_cmap.set_under('white', 1.0)
+			current_cmap = plt.cm.get_cmap()
+			current_cmap.set_bad(color='grey')
 		else:
 			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
 			f=open('../output/'+fprefix+'_'+mpref+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat','rb')
@@ -250,23 +235,34 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			var = np.transpose(A.reshape((W, H), order='F'))
 			#define colorbars, depending on each score	--This can be easily written as a function
 			if score == '2AFC':
-				var[var<0]=np.nan #only positive values
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=0,vmax=100,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = '2AFC (%)'
 
-			if score == 'RocAbove' or score=='RocBelow':
-				var[var<0]=np.nan #only positive values
+			if score == 'RocAbove':
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=0,vmax=1,
 				cmap=plt.cm.bwr,
 				transform=ccrs.PlateCarree())
 				label = 'ROC area'
 
-			if score == 'Spearman' or score=='Pearson':
-				var[var<-1.]=np.nan #only sensible values
+			if score == 'RocBelow':
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=0,vmax=1,
+				cmap=plt.cm.bwr,
+				transform=ccrs.PlateCarree())
+				label = 'ROC area'
+
+			if score == 'Spearman':
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=-1,vmax=1,
+				cmap=plt.cm.bwr,
+				transform=ccrs.PlateCarree())
+				label = 'Correlation'
+
+			if score == 'Pearson':
 				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 				vmin=-1,vmax=1,
 				cmap=plt.cm.bwr,
@@ -285,7 +281,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 
 
 def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
-	"""A simple function for ploting probabilistic forecasts
+	"""A simple plot function for ploting probabilistic forecasts
 
 	PARAMETERS
 	----------
@@ -296,7 +292,6 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 		late: northern latitude
 		title: title
 	"""
-	#Need this score to be defined by the calibration method!!!
 	score = 'CCAFCST_P'
 
 	plt.figure(figsize=(15,15))
@@ -336,7 +331,6 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 				B=np.fromfile(f,dtype='float32',count=numval) #astype('float')
 				endrec=struct.unpack('i',f.read(4))[0]
 				var = np.flip(np.transpose(B.reshape((W, H), order='F')),0)
-				var[var<0]=np.nan #only positive values
 				ax2=plt.subplot(nwk, 3, (L*3)+(i+1),projection=ccrs.PlateCarree())
 				ax2.set_title("Week "+str(wk)+ ": "+tit[i])
 				ax2.add_feature(feature.LAND)
@@ -369,234 +363,6 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 	cbar.set_label('Probability (%)') #, rotation=270)
 	f.close()
 
-def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
-	"""A simple function for ploting probabilistic forecasts in flexible format (for a given threshold)
-
-	PARAMETERS
-	----------
-		thrs: the threshold, in the units of the predictand
-		loni: western longitude
-		lone: eastern longitude
-		lati: southern latitude
-		late: northern latitude
-	"""
-	#Implement: read degrees of freedom from CPT file
-	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
-	dof=ntrain
-
-	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("XDEF", fp):
-			W = int(line.split()[1])
-			XD= float(line.split()[4])
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("YDEF", fp):
-			H = int(line.split()[1])
-			YD= float(line.split()[4])
-
-	plt.figure(figsize=(15,15))
-
-	for L in range(nwk):
-		wk=L+1
-		#Read mean
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		muf = np.transpose(A.reshape((W, H), order='F'))
-		muf[muf==-999.]=np.nan #only sensible values
-
-		#Read variance
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		vari = np.transpose(A.reshape((W, H), order='F'))
-		vari[vari<0.]=np.nan #only positive values
-
-		#Compute scale parameter for the t-Student distribution
-		scalef=np.sqrt((dof-2)/dof*vari)
-
-		fprob = exceedprob(thrs,dof,muf,scalef)
-
-		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
-		ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
-
-		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
-		states_provinces = feature.NaturalEarthFeature(
-			category='cultural',
-			name='admin_1_states_provinces_shp',
-			scale='10m',
-			facecolor='none')
-
-		ax.add_feature(feature.LAND)
-		ax.add_feature(feature.COASTLINE)
-		ax.set_title('Probability (%) of Exceeding '+str(thrs)+" mm/week"+' for Week '+str(wk))
-		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-		 	linewidth=2, color='gray', alpha=0.5, linestyle='--')
-		pl.xlabels_top = False
-		pl.ylabels_left = True
-		pl.ylabels_right = False
-		pl.xformatter = LONGITUDE_FORMATTER
-		pl.yformatter = LATITUDE_FORMATTER
-		ax.add_feature(states_provinces, edgecolor='gray')
-		ax.set_ybound(lower=lati, upper=late)
-		CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), fprob,
-    		vmin=0,vmax=100,
-    		cmap=plt.cm.bwr,
-    		transform=ccrs.PlateCarree())
-		label = 'Probability (%) of Exceedance'
-
-		plt.subplots_adjust(hspace=0)
-		plt.subplots_adjust(bottom=0.15, top=0.9)
-		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
-		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
-		cbar.set_label(label) #, rotation=270)
-		f.close()
-
-def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
-	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
-
-	PARAMETERS
-	----------
-		thrs: the threshold, in the units of the predictand
-		lon: longitude
-		lat: latitude
-	"""
-	#Implement: read degrees of freedom from CPT file
-	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
-	dof=ntrain
-
-	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("XDEF", fp):
-			W = int(line.split()[1])
-			XD= float(line.split()[4])
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("YDEF", fp):
-			H = int(line.split()[1])
-			YD= float(line.split()[4])
-	with open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("TDEF", fp):
-			T = int(line.split()[1])
-			TD= 1  #not used
-
-	#Find the gridbox:
-	lonrange = np.linspace(loni, loni+W*XD,num=W)
-	latrange = np.linspace(lati+H*YD, lati, num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
-	lon_grid, lat_grid = np.meshgrid(lonrange, latrange)
-	a = abs(lat_grid-lat)+abs(lon_grid-lon)
-	i,j = np.unravel_index(a.argmin(),a.shape)   #i:latitude   j:longitude
-
-	#Now compute stuff and plot
-	plt.figure(figsize=(15,15))
-
-	for L in range(nwk):
-		wk=L+1
-		#Forecast files--------
-		#Read mean
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		muf = np.transpose(A.reshape((W, H), order='F'))
-		muf[muf==-999.]=np.nan #only sensible values
-		muf=muf[i,j]
-
-		#Read variance
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		varf = np.transpose(A.reshape((W, H), order='F'))
-		varf[varf<0.]=np.nan #only positive values
-		varf=varf[i,j]
-
-		#Obs file--------
-		#Compute obs mean
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)*T
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		muc0 = np.transpose(A.reshape((W, H, T), order='F'))
-		muc0[muc0==-999.]=np.nan #only sensible values
-		muc=np.nanmean(muc0, axis=0)  #axis 0 is T
-		#Compute obs variance
-		varc=np.nanvar(muc0, axis=0)  #axis 0 is T
-		#Select gridbox values
-		muc=muc[i,j]
-		varc=varf #varc[i,j]
-		#print (muf,varf)
-		#print (muc,varc)
-		#print ('----')
-
-		#Compute scale parameter for the t-Student distribution
-		scalef=np.sqrt((dof-2)/dof*varf)
-		scalec=np.sqrt((dof-2)/dof*varc)
-
-		x = np.linspace(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)), 100)
-
-		style = dict(size=10, color='black')
-
-		cprob = exceedprob(thrs,dof,muc,scalec)
-		fprob = exceedprob(thrs,dof,muf,scalef)
-		cprobth = round(t.sf(thrs, dof, loc=muc, scale=scalec)*100,2)
-		fprobth = round(t.sf(thrs, dof, loc=muf, scale=scalef)*100,2)
-		cpdf=t.pdf(x, dof, loc=muc, scale=scalec)*100
-		fpdf=t.pdf(x, dof, loc=muf, scale=scalef)*100
-		oddsrc =(fprobth/cprobth)
-
-		fig, ax = plt.subplots(1, 2,figsize=(12,4))
-		#font = {'family' : 'Palatino',
-		#        'size'   : 16}
-		#plt.rc('font', **font)
-		#plt.rc('text', usetex=True)
-		#plt.rc('font', family='serif')
-
-		plt.subplot(1, 2, 1)
-		plt.plot(x, t.sf(x, dof, loc=muc, scale=scalec)*100,'b-', lw=5, alpha=0.6, label='clim')
-		plt.plot(x, t.sf(x, dof, loc=muf, scale=scalef)*100,'r-', lw=5, alpha=0.6, label='fcst')
-		plt.axvline(x=thrs, color='k', linestyle='--')
-		plt.plot(thrs, fprobth,'ok')
-		plt.plot(thrs, cprobth,'ok')
-		plt.text(thrs+0.05, cprobth, str(cprobth)+'%', **style)
-		plt.text(thrs+0.05, fprobth, str(fprobth)+'%', **style)
-		#plt.text(0.1, 10, r'$\frac{P(fcst)}{P(clim)}=$'+str(round(oddsrc,1)), **style)
-		plt.text(min(t.ppf(0.0001, dof, loc=muf, scale=scalef),t.ppf(0.0001, dof, loc=muc, scale=scalec)), -20, 'P(fcst)/P(clim)='+str(round(oddsrc,1)), **style)
-		plt.legend(loc='best', frameon=False)
-		# Add title and axis names
-		plt.title('Probabilities of Exceedance for Week '+str(wk))
-		plt.xlabel('Rainfall')
-		plt.ylabel('Probability (%)')
-		# Limits for the Y axis
-		plt.xlim(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)))
-
-		plt.subplot(1, 2, 2)
-		plt.plot(x, cpdf,'b-', lw=5, alpha=0.6, label='clim')
-		plt.plot(x, fpdf,'r-', lw=5, alpha=0.6, label='fcst')
-		plt.axvline(x=thrs, color='k', linestyle='--')
-		plt.legend(loc='best', frameon=False)
-		# Add title and axis names
-		plt.title('Probability Density Functions for Week '+str(wk))
-		plt.xlabel('Rainfall')
-		plt.ylabel('Probability (%)')
-		# Limits for the Y axis
-		plt.xlim(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)))
-
-	plt.subplots_adjust(hspace=0)
-	plt.subplots_adjust(bottom=0.15, top=0.9)
-	#cax = plt.axes([0.2, 0.08, 0.6, 0.04])
-	#cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
-	#cbar.set_label(label) #, rotation=270)
-	f.close()
 
 def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download):
 	if not force_download:
@@ -743,14 +509,8 @@ def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,
 		if MOS=='CCA':
 			# Opens CCA
 			f.write("611\n")
-		if MOS=='PCR':
-			# Opens PCR
-			f.write("612\n")
-		elif MOS=='PCR':
-			# Opens GCM; because the calibration takes place via sklearn.linear_model (in the Jupyter notebook)
-			f.write("614\n")
 		elif MOS=='None':
-			# Opens GCM (no calibration performed in CPT)
+			# Opens GCM
 			f.write("614\n")
 		else:
 			print ("MOS option is invalid")
@@ -774,7 +534,7 @@ def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,
 		f.write(str(wlo1)+'\n')
 		# Easternmost longitude
 		f.write(str(elo1)+'\n')
-		if MOS=='CCA' or MOS=='PCR':
+		if MOS=='CCA':
 			# Minimum number of X modes
 			f.write("1\n")
 			# Maximum number of X modes
@@ -928,7 +688,7 @@ def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,
 		file='../output/'+fprefix+'_'+mpref+'_RocAbove_'+training_season+'_wk'+str(wk)+'\n'
 		f.write(file)
 
-		if MOS=='CCA' or MOS=='PCR':   #DO NOT USE CPT to compute probabilities if MOS='None' --use IRIDL for direct counting
+		if MOS=='CCA':   #DO NOT USE CPT to compute probabilities if MOS='None' --use IRIDL for direct counting
 			#######FORECAST(S)	!!!!!
 			# Probabilistic (3 categories) maps
 			f.write("455\n")
@@ -951,30 +711,6 @@ def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,
 			file='../output/'+fprefix+'_'+mpref+'FCST_V_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
 			f.write(file)
 			#502 # Forecast odds
-
-
-			#######Following files are used to plot the flexible format
-			# Save cross-validated predictions
-			f.write("201\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_xvPr_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			# Save deterministic forecasts [mu for Gaussian fcst pdf]
-			f.write("511\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			# Save prediction error variance [sigma^2 for Gaussian fcst pdf]
-			f.write("514\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			# Save z
-			f.write("532\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_z_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			# Save predictand [to build predictand pdf]
-			f.write("102\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-
 			#Exit submenu
 			f.write("0\n")
 
