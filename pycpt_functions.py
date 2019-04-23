@@ -3,6 +3,8 @@
 #Notes: be sure it matches version of PyCPT
 #Log:
 
+# 21 Apr 2019, AGM: added option to list average skill metrics for particular subdomains.
+# 17 Apr 2019, AGM: fixed bug related to the inverse Gamma function.
 #30 Mar 2019, AGM: added PCR option, CHIRPS as obs, flexible format plots,
 #					automatically uses retrospective for validation (due to
 #					the very high sample size). Solved problems related to
@@ -543,7 +545,7 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		varc=varc[i,j]
 
 		#Compute scale parameter for the t-Student distribution
-		scalef=np.sqrt(dof*varf)   #due to transformation from Gamma 
+		scalef=np.sqrt(dof*varf)   #due to transformation from Gamma
 		scalec=np.sqrt((dof-2)/dof*varc)
 
 		x = np.linspace(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)), 100)
