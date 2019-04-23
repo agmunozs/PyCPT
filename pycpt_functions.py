@@ -27,6 +27,7 @@ import numpy as np
 import pandas as pd
 from copy import copy
 from scipy.stats import t
+from scipy.stats import invgamma
 import cartopy.crs as ccrs
 from cartopy import feature
 import matplotlib.pyplot as plt
@@ -178,7 +179,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		title: title
 	"""
 
-	plt.figure(figsize=(15,15))
+	plt.figure(figsize=(20,5))
 
 	for L in range(nwk):
 		wk=L+1
@@ -192,13 +193,15 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 				H = int(line.split()[1])
 				YD= float(line.split()[4])
 
-		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
+#		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
+		ax = plt.subplot(1,nwk, wk, projection=ccrs.PlateCarree())
 		ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
 
 		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 		states_provinces = feature.NaturalEarthFeature(
 			category='cultural',
-			name='admin_1_states_provinces_shp',
+#			name='admin_1_states_provinces_shp',
+			name='admin_0_countries',
 			scale='10m',
 			facecolor='none')
 
@@ -206,7 +209,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		ax.add_feature(feature.COASTLINE)
 		ax.set_title(score+' for Week '+str(wk))
 		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-				  linewidth=2, color='gray', alpha=0.5, linestyle='--')
+				  linewidth=2, color='gray', alpha=0., linestyle='--')
 		pl.xlabels_top = False
 		pl.ylabels_left = True
 		pl.ylabels_right = False
@@ -227,7 +230,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 			current_cmap.set_bad('white',1.0)
 			current_cmap.set_under('white', 1.0)
 			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
-				#vmin=-np.max(var),#vmax=np.max(var),
+				#vmin=-max(np.max(var),np.abs(np.min(var))), #vmax=np.max(var),
 				norm=MidpointNormalize(midpoint=0.),
 				cmap=current_cmap,
 				transform=ccrs.PlateCarree())
@@ -319,7 +322,8 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 		states_provinces = feature.NaturalEarthFeature(
 			category='cultural',
-			name='admin_1_states_provinces_shp',
+#			name='admin_1_states_provinces_shp',
+			name='admin_0_countries',
 			scale='10m',
 			facecolor='none')
 
@@ -428,7 +432,8 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 		states_provinces = feature.NaturalEarthFeature(
 			category='cultural',
-			name='admin_1_states_provinces_shp',
+#			name='admin_1_states_provinces_shp',
+			name='admin_0_countries',
 			scale='10m',
 			facecolor='none')
 
@@ -519,7 +524,9 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		varf=varf[i,j]
 
 		#Obs file--------
-		#Compute obs mean
+		#Compute obs mean and variance. Note that since CPT doesn't transform the predictor, we need
+		#to apply and inverse Gamma transformation to the predictand (obs)
+		#
 		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
 		f=open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
 		recl=struct.unpack('i',f.read(4))[0]
@@ -533,19 +540,17 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		varc=np.nanvar(muc0, axis=0)  #axis 0 is T
 		#Select gridbox values
 		muc=muc[i,j]
-		varc=varf #varc[i,j]
-		#print (muf,varf)
-		#print (muc,varc)
-		#print ('----')
+		varc=varc[i,j]
 
 		#Compute scale parameter for the t-Student distribution
-		scalef=np.sqrt((dof-2)/dof*varf)
+		scalef=np.sqrt(dof*varf)   #due to transformation from Gamma 
 		scalec=np.sqrt((dof-2)/dof*varc)
 
 		x = np.linspace(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)), 100)
 
 		style = dict(size=10, color='black')
 
+		#cprob = special.erfc((x-muc)/scalec)
 		cprob = exceedprob(thrs,dof,muc,scalec)
 		fprob = exceedprob(thrs,dof,muf,scalef)
 		cprobth = round(t.sf(thrs, dof, loc=muc, scale=scalec)*100,2)
@@ -587,7 +592,7 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		# Add title and axis names
 		plt.title('Probability Density Functions for Week '+str(wk))
 		plt.xlabel('Rainfall')
-		plt.ylabel('Probability (%)')
+		plt.ylabel('')
 		# Limits for the Y axis
 		plt.xlim(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)))
 
