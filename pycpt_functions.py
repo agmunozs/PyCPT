@@ -1,4 +1,4 @@
-#This is PyCPT_functions.py (version1.2) -- 30 Mar 2019
+#This is PyCPT_functions.py (version1.2) -- 22 Apr 2019
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and AW Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Log:
@@ -288,6 +288,54 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		cbar.set_label(label) #, rotation=270)
 		f.close()
 
+def skilltab(score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
+
+	PARAMETERS
+	----------
+		thrs: the threshold, in the units of the predictand
+		lon: longitude
+		lat: latitude
+	"""
+
+	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
+	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+		for line in lines_that_contain("XDEF", fp):
+			W = int(line.split()[1])
+			XD= float(line.split()[4])
+	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+		for line in lines_that_contain("YDEF", fp):
+			H = int(line.split()[1])
+			YD= float(line.split()[4])
+
+	#Find the gridbox:
+	lonrange = np.linspace(loni, loni+W*XD,num=W)
+	latrange = np.linspace(lati+H*YD, lati, num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
+	lon_grid, lat_grid = np.meshgrid(lonrange, latrange)
+	#first point
+	a = abs(lat_grid-lat1)+abs(lon_grid-lon1)
+	i1,j1 = np.unravel_index(a.argmin(),a.shape)   #i:latitude   j:longitude
+	#second point
+	a = abs(lat_grid-lat2)+abs(lon_grid-lon2)
+	i2,j2 = np.unravel_index(a.argmin(),a.shape)   #i:latitude   j:longitude
+
+	df = pd.DataFrame(index=wknam[0:nwk])
+	for L in range(nwk):
+		wk=L+1
+		for S in score:
+			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+			f=open('../output/'+fprefix+'_'+mpref+'_'+str(S)+'_'+training_season+'_wk'+str(wk)+'.dat','rb')
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			#Now we read the field
+			A=np.fromfile(f,dtype='float32',count=numval)
+			var = np.transpose(A.reshape((W, H), order='F'))
+			var[var==-999.]=np.nan #only sensible values
+			df.at[wknam[L], str(S)] = round(np.nanmean(np.nanmean(var[i1:i2,j1:j2], axis=1), axis=0),2)
+			df.at[wknam[L], 'max('+str(S)+')']  = round(np.nanmax(var[i1:i2,j1:j2]),2)
+			df.at[wknam[L], 'min('+str(S)+')']  = round(np.nanmin(var[i1:i2,j1:j2]),2)
+	return df
+	f.close()
 
 def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
 	"""A simple function for ploting probabilistic forecasts
