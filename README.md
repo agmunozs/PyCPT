@@ -14,8 +14,11 @@ Simon J. Mason (IRI) for CPT core development.
 Rémi Cousin (IRI) for key Ingrid code development and support.
 
 Xandre Chourio (IRI) for Windows and code support, and testing.
+
 James Doss-Gollin (Columbia Water Center) developed the original download Python functions.
+
 Thea Turkington (NEA) for several and intense tesrting. 
+
 Part of the effort to develop PyCPT is funded by the Columbia World Project "Adapting Agriculture to Climate Today, for Tomorrow" (ACToday), and NOAA MAPP's projects NA18OAR4310275 (Muñoz) and NA16OAR4310145 (Robertson).
 
 ## Instructions:
