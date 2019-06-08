@@ -1,8 +1,11 @@
-#This is PyCPT_functions.py (version1.2) -- 22 Apr 2019
+#This is PyCPT_functions.py (version1.2) -- 6 June 2019
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and AW Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Log:
 
+# 6 June 2019, AGM: fixed bug in PyIngrid related to the number of initializations used
+#					for the ECMWF model, and optimized reading multiple records in
+#					sequential Fortran binary (GrADS) files.
 # 21 Apr 2019, AGM: added option to list average skill metrics for particular subdomains.
 # 17 Apr 2019, AGM: fixed bug related to the inverse Gamma function.
 #30 Mar 2019, AGM: added PCR option, CHIRPS as obs, flexible format plots,
@@ -646,7 +649,7 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		plt.plot(x, cpdf,'b-', lw=5, alpha=0.6, label='clim')
 		plt.plot(x, fpdf,'r-', lw=5, alpha=0.6, label='fcst')
 		plt.axvline(x=thrs, color='k', linestyle='--')
-		#fill area under the curve --not done 
+		#fill area under the curve --not done
 		#section = np.arange(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)), thrs, 1/20.)
 		#plt.fill_between(section,f(section))
 		plt.legend(loc='best', frameon=False)
