@@ -1,6 +1,8 @@
 # PyCPT - v1.2
 Python interface for the CPT command line version, for seasonal and sub-seasonal skill assessment and forecast experiments
+
 PyCPT_s2svX: version X of the sub-seasonal PyCPT notebook
+
 PyCPT_seavX: version X of the seasonal PyCPT notebook
 
 ## Authors
@@ -8,7 +10,9 @@ PyCPT_seavX: version X of the seasonal PyCPT notebook
 
 ## Acknowledgements
 Simon J. Mason (IRI) for CPT core development.
+
 Rémi Cousin (IRI) for key Ingrid code development and support.
+
 Xandre Chourio (IRI) for Windows and code support, and testing.
 James Doss-Gollin (Columbia Water Center) developed the original download Python functions.
 Thea Turkington (NEA) for several and intense tesrting. 
