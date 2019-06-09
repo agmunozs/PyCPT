@@ -24,5 +24,6 @@ Part of the effort to develop PyCPT is funded by the Columbia World Project "Ada
 ## Instructions:
 1. Download and compile CPT (https://iri.columbia.edu/cpt). Take note of the PATH to CPT.
 2. Clone or download the function and notebook files in the same (working) folder, open the notebook, modify the namelist to include, for example, your PATH to CPT and working directory. Check dates (especially if interested in realtime cases).
-3. Create the file .IRIDLAUTH in the same folder. Its content must be the Data Library S2S key obtained via help@iri.columbia.edu
+
+3. [ONLY needed for the s2s version] Create the file .IRIDLAUTH in the same folder. Its content must be the Data Library S2S key obtained via help@iri.columbia.edu
 4. Run the notebook.
