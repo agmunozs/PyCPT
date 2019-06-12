@@ -1192,23 +1192,23 @@ def CPTscript(model,mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix
 			f.write("111\n")
 			# Save cross-validated predictions
 			f.write("201\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_xvPr_'+tar+'_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_xvPr_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save deterministic forecasts [mu for Gaussian fcst pdf]
 			f.write("511\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_mu_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save prediction error variance [sigma^2 for Gaussian fcst pdf]
 			f.write("514\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_var_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save z
 			f.write("532\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_z_'+tar+'_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_z_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save predictand [to build predictand pdf]
 			f.write("102\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_Obs_'+tar+'_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_Obs_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Stop saving  (not needed in newest version of CPT)
 
@@ -1226,9 +1226,10 @@ def ensemblefiles(models,work):
 	"""
 	get_ipython().system("mkdir ../output/NextGen/")
 	get_ipython().system("cd ../output/NextGen/")
+	get_ipython().system("rm -Rf "+work+"_NextGen.tgz")
 	for i in range(len(models)):
 		get_ipython().system("cp ../*"+models[i]+"*.txt .")
 
-	get_ipython().system("tar cvzf "+work+"_NextGen.tgz *")
+	get_ipython().system("tar cvzf "+work+"_NextGen.tgz *.txt")
 	print("Compressed file "+work+"_NextGen.tgz created in output/NextGen/")
 	print("Now send that file to your contact at the IRI")
