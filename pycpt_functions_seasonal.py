@@ -128,7 +128,7 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
 		ax.add_feature(states_provinces, edgecolor='gray')
 	plt.show()
 
-def plteofs(models,mode,loni,lone,lati,late,fprefix,mpref,tgts, mons):
+def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 	"""A simple function for ploting EOFs computed by CPT
 
 	PARAMETERS
@@ -142,11 +142,11 @@ def plteofs(models,mode,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 	mode=mode-1
 	nmods=len(models)
 	#plt.figure(figsize=(20,10))
-	fig, ax = plt.subplots(figsize=(20,15))
-	k=0
+	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	mon=mons[0]
 	tar=tgts[0]
 	model=models[0]
+	M=3
 	#Read  grid
 	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFX_'+tar+'_'+mon+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
@@ -165,16 +165,70 @@ def plteofs(models,mode,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 			Hy = int(line.split()[1])
 			YDy= float(line.split()[4])
 
-	M=3
 	eofx=np.empty([M,H,W])  #define array for later use
 	eofy=np.empty([M,Hy,Wy])  #define array for later use
+
+	k=0
+	for mon in mons[::3]:
+		k=k+1
+		tar=tgts[mons.index(mon)]
+		ax = plt.subplot(nmods+1,4, k, projection=ccrs.PlateCarree()) #nmods+obs
+		ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
+
+		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+		f=open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.dat','rb')
+		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+		for mo in range(M):
+			#Now we read the field
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+			A0=np.fromfile(f,dtype='float32',count=numval)
+			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+			eofy[mo,:,:]= np.transpose(A0.reshape((Wy, Hy), order='F'))
+		eofy[eofy==-999.]=np.nan #nans
+
+		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+		states_provinces = feature.NaturalEarthFeature(
+			category='cultural',
+#				name='admin_1_states_provinces_shp',
+			name='admin_0_countries',
+			scale='10m',
+			facecolor='none')
+
+		ax.add_feature(feature.LAND)
+		ax.add_feature(feature.COASTLINE)
+
+		#tick_spacing=0.5
+		#ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+
+		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+			  linewidth=2, color='gray', alpha=0., linestyle='--')
+		pl.xlabels_top = False
+		pl.xlabels_bottom = False
+		pl.ylabels_left = True
+		pl.ylabels_right = False
+		pl.xformatter = LONGITUDE_FORMATTER
+		pl.yformatter = LATITUDE_FORMATTER
+		ax.add_feature(states_provinces, edgecolor='gray')
+		ax.set_ybound(lower=lati, upper=late)
+
+		if k<=4:
+			ax.set_title(tar)
+		#if ax.is_first_col():
+		ax.set_ylabel(model, rotation=90)
+
+		CS=plt.pcolormesh(np.linspace(loni, loni+Wy*XDy,num=Wy), np.linspace(lati+Hy*YDy, lati, num=Hy), eofy[mode,:,:],
+		vmin=-.1,vmax=.1,
+		cmap=plt.cm.bwr,
+		transform=ccrs.PlateCarree())
+		label = 'EOF charges'
+
 	for model in models:
 		for mon in mons[::3]:
 			k=k+1
 			tar=tgts[mons.index(mon)]
-			ax = plt.subplot(nmods,4, k, projection=ccrs.PlateCarree())
-			ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
-
+			ax = plt.subplot(nmods+1,4, k, projection=ccrs.PlateCarree()) #nmods+obs
+			ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 			states_provinces = feature.NaturalEarthFeature(
 				category='cultural',
@@ -194,13 +248,16 @@ def plteofs(models,mode,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 			pl.xlabels_top = False
 			pl.ylabels_left = True
 			pl.ylabels_right = False
+			pl.xlabels_bottom = False
 			pl.xformatter = LONGITUDE_FORMATTER
 			pl.yformatter = LATITUDE_FORMATTER
 			ax.add_feature(states_provinces, edgecolor='gray')
 			ax.set_ybound(lower=lati, upper=late)
+			ax.set_xbound(lower=loni, upper=lone)
 
-			if k<=4:
-				ax.set_title(tar)
+			if k > (nmods+1)*4-4:
+				pl.xlabels_bottom = True
+
 			#if ax.is_first_col():
 			ax.set_ylabel(model, rotation=90)
 
@@ -215,25 +272,7 @@ def plteofs(models,mode,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 				endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
 				eofx[mo,:,:]= np.transpose(A0.reshape((W, H), order='F'))
 
-			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-			f=open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.dat','rb')
-			#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
-			for mo in range(M):
-				#Now we read the field
-				recl=struct.unpack('i',f.read(4))[0]
-				numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
-				A0=np.fromfile(f,dtype='float32',count=numval)
-				endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
-				eofy[mo,:,:]= np.transpose(A0.reshape((Wy, Hy), order='F'))
-
 			eofx[eofx==-999.]=np.nan #nans
-			eofy[eofy==-999.]=np.nan #nans
-			if k<=4:
-				CS=plt.pcolormesh(np.linspace(loni, loni+Wy*XDy,num=W), np.linspace(lati+Hy*YDy, lati, num=Hy), eofy[mode,:,:],
-				vmin=-.1,vmax=.1,
-				cmap=plt.cm.bwr,
-				transform=ccrs.PlateCarree())
-				label = 'EOF charges'
 
 			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), eofx[mode,:,:],
 			vmin=-.1,vmax=.1,
@@ -244,6 +283,7 @@ def plteofs(models,mode,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 			#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
 			#cbar_ax = plt.add_axes([0.85, 0.15, 0.05, 0.7])
 			#plt.tight_layout()
+
 			plt.autoscale(enable=True)
 			plt.subplots_adjust(bottom=0.15, top=0.9)
 			cax = plt.axes([0.2, 0.08, 0.6, 0.04])
@@ -264,7 +304,7 @@ def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 	"""
 	nmods=len(models)
 	#plt.figure(figsize=(20,10))
-	fig, ax = plt.subplots(figsize=(20,15))
+	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	k=0
 	for model in models:
 		for mon in mons[::3]:
@@ -304,6 +344,9 @@ def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 			pl.xlabels_top = False
 			pl.ylabels_left = True
 			pl.ylabels_right = False
+			pl.xlabels_bottom = False
+			if k > (nmods)*4-4:
+				pl.xlabels_bottom = True
 			pl.xformatter = LONGITUDE_FORMATTER
 			pl.yformatter = LATITUDE_FORMATTER
 			ax.add_feature(states_provinces, edgecolor='gray')
@@ -311,8 +354,8 @@ def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 
 			if k<=4:
 				ax.set_title(tar)
-			#if ax.is_first_col():
-			ax.set_ylabel(model, rotation=90)
+			#for i, axi in enumerate(axes):  # need to enumerate to slice the data
+			#	axi.set_ylabel(model, fontsize=12)
 
 			if score == 'CCAFCST_V' or score == 'PCRFCST_V':
 				f=open('../output/'+model+'_'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat','rb')
@@ -376,7 +419,7 @@ def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 				#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
 				#cbar_ax = plt.add_axes([0.85, 0.15, 0.05, 0.7])
 				#plt.tight_layout()
-				plt.autoscale(enable=True)
+				#plt.autoscale(enable=True)
 				plt.subplots_adjust(bottom=0.15, top=0.9)
 				cax = plt.axes([0.2, 0.08, 0.6, 0.04])
 				cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
@@ -1141,6 +1184,32 @@ def CPTscript(model,mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix
 			#Exit submenu
 			f.write("0\n")
 
+			# Change to ASCII format to send files to DL
+			f.write("131\n")
+			# ASCII format
+			f.write("2\n")
+			# Output results
+			f.write("111\n")
+			# Save cross-validated predictions
+			f.write("201\n")
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_xvPr_'+tar+'_'+monf+str(fyr)+'\n'
+			f.write(file)
+			# Save deterministic forecasts [mu for Gaussian fcst pdf]
+			f.write("511\n")
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'\n'
+			f.write(file)
+			# Save prediction error variance [sigma^2 for Gaussian fcst pdf]
+			f.write("514\n")
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'\n'
+			f.write(file)
+			# Save z
+			f.write("532\n")
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_z_'+tar+'_'+monf+str(fyr)+'\n'
+			f.write(file)
+			# Save predictand [to build predictand pdf]
+			f.write("102\n")
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_Obs_'+tar+'_'+monf+str(fyr)+'\n'
+			f.write(file)
 			# Stop saving  (not needed in newest version of CPT)
 
 		# Exit
