@@ -1216,3 +1216,19 @@ def CPTscript(model,mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix
 		f.write("0\n")
 		f.close()
 		get_ipython().system("cp params "+model+"_"+fprefix+"_"+mpref+"_"+tar+"_"+mon+".cpt")
+
+def ensemblefiles(models,work):
+	"""A simple function for preparing the NextGen ensemble files for the DL
+
+	PARAMETERS
+	----------
+		models: array with selected models
+	"""
+	get_ipython().system("mkdir ../output/NextGen/")
+	get_ipython().system("cd ../output/NextGen/")
+	for i in range(len(models)):
+		get_ipython().system("cp ../*"+models[i]+"*.txt .")
+
+	get_ipython().system("tar cvzf "+work+"_NextGen.tgz *")
+	print("Compressed file "+work+"_NextGen.tgz created in output/NextGen/")
+	print("Now send that file to your contact at the IRI")
