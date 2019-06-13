@@ -139,28 +139,30 @@ def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 		lati: southern latitude
 		late: northern latitude
 	"""
+	mol=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+	tgts=['Feb-Apr','Mar-May','Apr-Jun','May-Jul','Jun-Aug','Jul-Sep','Aug-Oct','Sep-Nov','Oct-Dec','Nov-Jan','Dec-Feb','Jan-Mar']
+
 	mode=mode-1
 	nmods=len(models)
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
-	mon=mons[0]
-	tar=tgts[0]
+	tari=tgts[0]
 	model=models[0]
 	M=3
 	#Read  grid
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFX_'+tar+'_'+mon+'.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFX_'+tari+'_Jan.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
 			W = int(line.split()[1])
 			XD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFX_'+tar+'_'+mon+'.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFX_'+tari+'_Jan.ctl', "r") as fp:
 		for line in lines_that_contain("YDEF", fp):
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tari+'_Jan.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
 			Wy = int(line.split()[1])
 			XDy= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tari+'_Jan.ctl', "r") as fp:
 		for line in lines_that_contain("YDEF", fp):
 			Hy = int(line.split()[1])
 			YDy= float(line.split()[4])
@@ -169,9 +171,9 @@ def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 	eofy=np.empty([M,Hy,Wy])  #define array for later use
 
 	k=0
-	for mon in mons[::3]:
+	for tar in mons:
 		k=k+1
-		tar=tgts[mons.index(mon)]
+		mon=mol[tgts.index(tar)]
 		ax = plt.subplot(nmods+1,4, k, projection=ccrs.PlateCarree()) #nmods+obs
 		ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 
@@ -224,9 +226,9 @@ def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 		label = 'EOF charges'
 
 	for model in models:
-		for mon in mons[::3]:
+		for tar in mons:
 			k=k+1
-			tar=tgts[mons.index(mon)]
+			mon=mol[tgts.index(tar)]
 			ax = plt.subplot(nmods+1,4, k, projection=ccrs.PlateCarree()) #nmods+obs
 			ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
@@ -303,13 +305,16 @@ def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 		late: northern latitude
 	"""
 	nmods=len(models)
+	mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+	tgts=['Feb-Apr','Mar-May','Apr-Jun','May-Jul','Jun-Aug','Jul-Sep','Aug-Oct','Sep-Nov','Oct-Dec','Nov-Jan','Dec-Feb','Jan-Mar']
+
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	k=0
 	for model in models:
-		for mon in mons[::3]:
+		for tar in mons:
 			k=k+1
-			tar=tgts[mons.index(mon)]
+			mon=mo[tgts.index(tar)]
 			#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
 			with open('../output/'+model+'_'+fprefix+'_'+mpref+'_2AFC_'+tar+'_'+mon+'.ctl', "r") as fp:
 				for line in lines_that_contain("XDEF", fp):
