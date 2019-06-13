@@ -56,9 +56,9 @@ class MidpointNormalize(colors.Normalize):
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
 
-def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2, sla1, sla2, nla1, nla2, tgti, tgtf, mon, monf, fyr, os, wetday_threshold, tar, model, obs_source, hdate_last, force_download):
+def PrepFiles(fprefix, threshold_pctle, wlo1, wlo2,elo1, elo2, sla1, sla2, nla1, nla2, tgti, tgtf, mon, monf, fyr, os, wetday_threshold, tar, model, obs_source, hdate_last, force_download):
 	"""Function to download (or not) the needed files"""
-	if rainfall_frequency:
+	if fprefix=='RFREQ':
 		GetObs_RFREQ(wlo2, elo2, sla2, nla2, wetday_threshold, threshold_pctle, tar, obs_source, hdate_last, force_download)
 		print('Obs:rfreq file ready to go')
 		print('----------------------------------------------')
@@ -69,6 +69,26 @@ def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2, sla1, 
 		print('----------------------------------------------')
 		#GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, authkey, wk, wetday_threshold, nlag, model, force_download)
 		GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday_threshold, model, force_download)
+		print('Forecasts file ready to go')
+		print('----------------------------------------------')
+	elif fprefix=='UQ':
+		GetHindcasts_UQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download)
+		print('Hindcasts file ready to go')
+		print('----------------------------------------------')
+		GetObs(wlo2, elo2, sla2, nla2, tar, obs_source, hdate_last, force_download)
+		print('Obs:precip file ready to go')
+		print('----------------------------------------------')
+		GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download)
+		print('Forecasts file ready to go')
+		print('----------------------------------------------')
+	elif fprefix=='VQ':
+		GetHindcasts_VQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download)
+		print('Hindcasts file ready to go')
+		print('----------------------------------------------')
+		GetObs(wlo2, elo2, sla2, nla2, tar, obs_source, hdate_last, force_download)
+		print('Obs:precip file ready to go')
+		print('----------------------------------------------')
+		GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download)
 		print('Forecasts file ready to go')
 		print('----------------------------------------------')
 	else:
@@ -846,6 +866,42 @@ def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, wetday_thres
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_RFREQ_"+tar+"_ini"+mon+".tsv")
 
+def GetHindcasts_UQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download):
+	if not force_download:
+		try:
+			ff=open(model+"_uq_"+tar+"_ini"+mon+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("Warning: {0}".format(err))
+			print("Hindcasts file doesn't exist --downloading")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.MONTHLY/.PGBF/.pressure_level/.UGRD/P/850/VALUE/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.MONTHLY/.PGBF/.pressure_level/.SPFH/P/850/VALUE/mul/S/%281%20'+mon+'%201982-2009%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+		}
+		# calls curl to download data
+		url=dic[model]
+		print("\n Hindcasts URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"_uq_"+tar+"_ini"+mon+".tsv")
+
+def GetHindcasts_VQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download):
+	if not force_download:
+		try:
+			ff=open(model+"_vq_"+tar+"_ini"+mon+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("Warning: {0}".format(err))
+			print("Hindcasts file doesn't exist --downloading")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.MONTHLY/.PGBF/.pressure_level/.VGRD/P/850/VALUE/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.MONTHLY/.PGBF/.pressure_level/.SPFH/P/850/VALUE/mul/S/%281%20'+mon+'%201982-2009%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+		}
+		# calls curl to download data
+		url=dic[model]
+		print("\n Hindcasts URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"_vq_"+tar+"_ini"+mon+".tsv")
+
 def GetObs(wlo2, elo2, sla2, nla2, tar, obs_source, hdate_last, force_download):
 	if not force_download:
 		try:
@@ -856,7 +912,7 @@ def GetObs(wlo2, elo2, sla2, nla2, tar, obs_source, hdate_last, force_download):
 			print("Obs precip file doesn't exist --downloading")
 			force_download = True
 	if force_download:
-		url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/%28Jan%201982%29/%28Dec%202010%29/RANGE/T/%28'+tar+'%29/seasonalAverage/Y/'+str(sla2)+'/'+str(nla2)+'/RANGEEDGES/X/'+str(wlo2)+'/'+str(elo2)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
+		url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/%28Jan%201982%29/%28Dec%202010%29/RANGE/T/%28'+tar+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
 
 		print("\n Obs (Rainfall) data URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > obs_precip_"+tar+".tsv")
@@ -900,12 +956,48 @@ def GetForecast(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force
 				'GFDL-CM2p5-FLOR-A06': 'https://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/.GFDL-CM2p5-FLOR-A06/.MONTHLY/.prec/S/%280000%201%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
 				'GFDL-CM2p5-FLOR-B01': 'https://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/.GFDL-CM2p5-FLOR-B01/.MONTHLY/.prec/S/%280000%201%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
 				'NASA-GEOSS2S': 'https://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/.NASA-GEOSS2S/.HINDCAST/.MONTHLY/.prec/S/%280000%201%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
-				'NCEP-CFSv2': 'https://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/.NCEP-CFSv2/.HINDCAST/.MONTHLY/.prec/S/%280000%201%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+				'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.NMME_REALTIME_ENSEMBLE/.PGBF/.pressure_level/.UGRD/P/850/VALUE/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.NMME_REALTIME_ENSEMBLE/.PGBF/.pressure_level/.SPFH/P/850/VALUE/mul/S/%280000%201%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
 		}
 		# calls curl to download data
 		url=dic[model]
 		print("\n Forecast URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_precip_"+tar+"_ini"+monf+str(fyr)+".tsv")
+
+def GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download):
+	if not force_download:
+		try:
+			ff=open(model+"fcst_uq_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("Warning: {0}".format(err))
+			print("Forecasts file doesn't exist --downloading")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.NMME_REALTIME_ENSEMBLE/.PGBF/.pressure_level/.UGRD/P/850/VALUE/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.NMME_REALTIME_ENSEMBLE/.PGBF/.pressure_level/.SPFH/P/850/VALUE/mul/S/%281%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+		}
+		# calls curl to download data
+		url=dic[model]
+		print("\n Forecast URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"fcst_uq_"+tar+"_ini"+monf+str(fyr)+".tsv")
+
+def GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download):
+	if not force_download:
+		try:
+			ff=open(model+"fcst_vq_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
+			s = ff.readline()
+		except OSError as err:
+			print("Warning: {0}".format(err))
+			print("Forecasts file doesn't exist --downloading")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.NMME_REALTIME_ENSEMBLE/.PGBF/.pressure_level/.VGRD/P/850/VALUE/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.NMME_REALTIME_ENSEMBLE/.PGBF/.pressure_level/.SPFH/P/850/VALUE/mul/S/281%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/30/mul/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+		}
+		# calls curl to download data
+		url=dic[model]
+		print("\n Forecast URL: \n\n "+url)
+		get_ipython().system("curl -k "+url+" > "+model+"fcst_vq_"+tar+"_ini"+monf+str(fyr)+".tsv")
 
 def GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday_threshold, model, force_download):
 	if not force_download:
@@ -932,7 +1024,7 @@ def GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday
 		get_ipython().system("curl -k "+url+" > "+model+"fcst_RFREQ_"+tar+"_ini"+monf+str(fyr)+".tsv")
 
 
-def CPTscript(model,mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,tar,ntrain,rainfall_frequency,MOS):
+def CPTscript(model,mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,tar,ntrain,MOS):
 		"""Function to write CPT namelist file
 
 		"""
@@ -959,10 +1051,7 @@ def CPTscript(model,mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix
 
 		# Opens X input file
 		f.write("1\n")
-		if rainfall_frequency:
-			file='../input/'+model+'_RFREQ_'+tar+'_ini'+mon+'.tsv\n'
-		else:
-			file='../input/'+model+'_precip_'+tar+'_ini'+mon+'.tsv\n'
+		file='../input/'+model+'_'+fprefix+'_'+tar+'_ini'+mon+'.tsv\n'
 		f.write(file)
 		# Nothernmost latitude
 		f.write(str(nla1)+'\n')
@@ -980,18 +1069,12 @@ def CPTscript(model,mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix
 
 			# Opens forecast (X) file
 			f.write("3\n")
-			if rainfall_frequency:
-				file='../input/'+model+'fcst_RFREQ_'+tar+'_ini'+monf+str(fyr)+'.tsv\n'
-			else:
-				file='../input/'+model+'fcst_precip_'+tar+'_ini'+monf+str(fyr)+'.tsv\n'
+			file='../input/'+model+'fcst_'+fprefix+'_'+tar+'_ini'+monf+str(fyr)+'.tsv\n'
 			f.write(file)
 
 		# Opens Y input file
 		f.write("2\n")
-		if rainfall_frequency:
-			file='../input/obs_RFREQ_'+tar+'.tsv\n'
-		else:
-			file='../input/obs_precip_'+tar+'.tsv\n'
+		file='../input/obs_'+fprefix+'_'+tar+'.tsv\n'
 		f.write(file)
 		# Nothernmost latitude
 		f.write(str(nla2)+'\n')
@@ -1038,8 +1121,9 @@ def CPTscript(model,mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix
 
 		# Turn ON Transform predictand data
 		f.write("541\n")
-		# Turn ON zero bound for Y data	 (automatically on by CPT if variable is precip)
-		#f.write("542\n")
+		if fprefix=='RFREQ':
+			# Turn ON zero bound for Y data	 (automatically on by CPT if variable is precip)
+			f.write("542\n")
 		# Turn ON synchronous predictors
 		f.write("545\n")
 		# Turn ON p-values for masking maps
