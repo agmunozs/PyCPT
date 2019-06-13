@@ -140,7 +140,6 @@ def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 		late: northern latitude
 	"""
 	mol=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-	tgts=['Feb-Apr','Mar-May','Apr-Jun','May-Jul','Jun-Aug','Jul-Sep','Aug-Oct','Sep-Nov','Oct-Dec','Nov-Jan','Dec-Feb','Jan-Mar']
 
 	mode=mode-1
 	nmods=len(models)
@@ -306,7 +305,6 @@ def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 	"""
 	nmods=len(models)
 	mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-	tgts=['Feb-Apr','Mar-May','Apr-Jun','May-Jul','Jun-Aug','Jul-Sep','Aug-Oct','Sep-Nov','Oct-Dec','Nov-Jan','Dec-Feb','Jan-Mar']
 
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
