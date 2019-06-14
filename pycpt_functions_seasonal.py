@@ -320,7 +320,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mons)
 
 	PARAMETERS
 	----------
-		score: the score
+		score: the score 
 		loni: western longitude
 		lone: eastern longitude
 		lati: southern latitude
