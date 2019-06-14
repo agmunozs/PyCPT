@@ -1,4 +1,4 @@
-# PyCPT - v1.2
+# PyCPT - seasonal and sub-seasonal versions
 Python interface for the CPT command line version, for seasonal and sub-seasonal skill assessment and forecast experiments
 
 PyCPT_s2svX: version X of the sub-seasonal PyCPT notebook
