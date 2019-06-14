@@ -602,7 +602,6 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 	dof=ntrain
 	nmods=len(models)
 	tar=tgts[mons.index(monf)]
-	thrs=thrs/30
 	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
 	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
@@ -654,7 +653,7 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 
 		ax.add_feature(feature.LAND)
 		ax.add_feature(feature.COASTLINE)
-		ax.set_title('Probability (%) of Exceeding '+str(thrs*30)+" mm")
+		ax.set_title('Probability (%) of Exceeding '+str(thrs)+" mm/day")
 		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
 			linewidth=2, color='gray', alpha=0.5, linestyle='--')
 		pl.xlabels_top = False
@@ -689,7 +688,6 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 	#Implement: read degrees of freedom from CPT file
 	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
 	dof=ntrain
-	thrs=thrs/30
 	tar=tgts[mons.index(monf)]
 	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
 	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
@@ -817,6 +815,7 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 		plt.ylabel('')
 		# Limits for the Y axis
 		plt.xlim(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)))
+
 
 	plt.subplots_adjust(hspace=0)
 	plt.subplots_adjust(bottom=0.15, top=0.9)
