@@ -828,7 +828,7 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 def GetHindcasts(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download):
 	if not force_download:
 		try:
-			ff=open(model+"_precip_"+tar+"_ini"+mon+".tsv", 'r')
+			ff=open(model+"_PRCP_"+tar+"_ini"+mon+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
@@ -847,7 +847,7 @@ def GetHindcasts(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_
 		# calls curl to download data
 		url=dic[model]
 		print("\n Hindcasts URL: \n\n "+url)
-		get_ipython().system("curl -k "+url+" > "+model+"_precip_"+tar+"_ini"+mon+".tsv")
+		get_ipython().system("curl -k "+url+" > "+model+"_PRCP_"+tar+"_ini"+mon+".tsv")
 
 def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, wetday_threshold, tar, model, force_download):
 	if not force_download:
@@ -949,7 +949,7 @@ def GetObs_RFREQ(predictand, wlo2, elo2, sla2, nla2, wetday_threshold, threshold
 def GetForecast(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download):
 	if not force_download:
 		try:
-			ff=open(model+"fcst_precip_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
+			ff=open(model+"fcst_PRCP_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
@@ -968,7 +968,7 @@ def GetForecast(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force
 		# calls curl to download data
 		url=dic[model]
 		print("\n Forecast URL: \n\n "+url)
-		get_ipython().system("curl -k "+url+" > "+model+"fcst_precip_"+tar+"_ini"+monf+str(fyr)+".tsv")
+		get_ipython().system("curl -k "+url+" > "+model+"fcst_PRCP_"+tar+"_ini"+monf+str(fyr)+".tsv")
 
 def GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force_download):
 	if not force_download:
