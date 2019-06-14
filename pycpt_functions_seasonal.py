@@ -172,19 +172,19 @@ def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 	model=models[0]
 	M=3
 	#Read  grid
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFX_'+tari+'_Jan.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tari+'_Jan.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
 			W = int(line.split()[1])
 			XD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFX_'+tari+'_Jan.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tari+'_Jan.ctl', "r") as fp:
 		for line in lines_that_contain("YDEF", fp):
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tari+'_Jan.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_Jan.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
 			Wy = int(line.split()[1])
 			XDy= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tari+'_Jan.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_Jan.ctl', "r") as fp:
 		for line in lines_that_contain("YDEF", fp):
 			Hy = int(line.split()[1])
 			YDy= float(line.split()[4])
@@ -200,7 +200,7 @@ def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 		ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 
 		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.dat','rb')
+		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.dat','rb')
 		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
 		for mo in range(M):
 			#Now we read the field
@@ -286,7 +286,7 @@ def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 			ax.set_ylabel(model, rotation=90)
 
 			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-			f=open('../output/'+model+'_'+fprefix+'_'+mpref+'_EOFX_'+tar+'_'+mon+'.dat','rb')
+			f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tar+'_'+mon+'.dat','rb')
 			#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
 			for mo in range(M):
 				#Now we read the field
@@ -315,7 +315,7 @@ def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 			cbar.set_label(label) #, rotation=270)
 			f.close()
 
-def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
+def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 	"""A simple function for ploting the statistical scores
 
 	PARAMETERS
@@ -337,11 +337,11 @@ def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 			k=k+1
 			mon=mo[tgts.index(tar)]
 			#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-			with open('../output/'+model+'_'+fprefix+'_'+mpref+'_2AFC_'+tar+'_'+mon+'.ctl', "r") as fp:
+			with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_2AFC_'+tar+'_'+mon+'.ctl', "r") as fp:
 				for line in lines_that_contain("XDEF", fp):
 					W = int(line.split()[1])
 					XD= float(line.split()[4])
-			with open('../output/'+model+'_'+fprefix+'_'+mpref+'_2AFC_'+tar+'_'+mon+'.ctl', "r") as fp:
+			with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_2AFC_'+tar+'_'+mon+'.ctl', "r") as fp:
 				for line in lines_that_contain("YDEF", fp):
 					H = int(line.split()[1])
 					YD= float(line.split()[4])
@@ -410,7 +410,7 @@ def pltmap(models,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 				#current_cmap.set_under('white', 1.0)
 			else:
 				#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-				f=open('../output/'+model+'_'+fprefix+'_'+mpref+'_'+score+'_'+tar+'_'+mon+'.dat','rb')
+				f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_'+score+'_'+tar+'_'+mon+'.dat','rb')
 				recl=struct.unpack('i',f.read(4))[0]
 				numval=int(recl/np.dtype('float32').itemsize)
 				#Now we read the field
@@ -586,7 +586,7 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 	cbar.set_label('Probability (%)') #, rotation=270)
 	f.close()
 
-def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,monf,fyr,mons,tgts):
 	"""A simple function for ploting probabilistic forecasts in flexible format (for a given threshold)
 
 	PARAMETERS
@@ -600,24 +600,26 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 	#Implement: read degrees of freedom from CPT file
 	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
 	dof=ntrain
-
+	nmods=len(models)
+	tar=tgts[mons.index(monf)]
+	thrs=thrs/30
 	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
 			W = int(line.split()[1])
 			XD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
 		for line in lines_that_contain("YDEF", fp):
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
 
-	plt.figure(figsize=(15,15))
-
-	for L in range(nwk):
-		wk=L+1
-		#Read mean
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+model+'_'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+	#plt.figure(figsize=(20,10))
+	fig, ax = plt.subplots(figsize=(10,8),sharex=True,sharey=True)
+	k=0
+	for model in models:
+		k=k+1
+		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
+		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.dat','rb')
 		recl=struct.unpack('i',f.read(4))[0]
 		numval=int(recl/np.dtype('float32').itemsize)
 		#Now we read the field
@@ -626,7 +628,7 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 		muf[muf==-999.]=np.nan #only sensible values
 
 		#Read variance
-		f=open('../output/'+model+'_'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.dat','rb')
 		recl=struct.unpack('i',f.read(4))[0]
 		numval=int(recl/np.dtype('float32').itemsize)
 		#Now we read the field
@@ -639,7 +641,7 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 
 		fprob = exceedprob(thrs,dof,muf,scalef)
 
-		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
+		ax = plt.subplot(nmods, 1, k, projection=ccrs.PlateCarree())
 		ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
 
 		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
@@ -652,9 +654,9 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 
 		ax.add_feature(feature.LAND)
 		ax.add_feature(feature.COASTLINE)
-		ax.set_title('Probability (%) of Exceeding '+str(thrs)+" mm/week"+' for Week '+str(wk))
+		ax.set_title('Probability (%) of Exceeding '+str(thrs*30)+" mm")
 		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-		 	linewidth=2, color='gray', alpha=0.5, linestyle='--')
+			linewidth=2, color='gray', alpha=0.5, linestyle='--')
 		pl.xlabels_top = False
 		pl.ylabels_left = True
 		pl.ylabels_right = False
@@ -663,9 +665,9 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 		ax.add_feature(states_provinces, edgecolor='gray')
 		ax.set_ybound(lower=lati, upper=late)
 		CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), fprob,
-    		vmin=0,vmax=100,
-    		cmap=plt.cm.bwr,
-    		transform=ccrs.PlateCarree())
+			vmin=0,vmax=100,
+			cmap=plt.cm.bwr,
+			transform=ccrs.PlateCarree())
 		label = 'Probability (%) of Exceedance'
 
 		plt.subplots_adjust(hspace=0)
@@ -675,7 +677,7 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 		cbar.set_label(label) #, rotation=270)
 		f.close()
 
-def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,monf,fyr,mons,tgts):
 	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
 
 	PARAMETERS
@@ -687,17 +689,18 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 	#Implement: read degrees of freedom from CPT file
 	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
 	dof=ntrain
-
+	thrs=thrs/30
+	tar=tgts[mons.index(monf)]
 	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
 			W = int(line.split()[1])
 			XD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
 		for line in lines_that_contain("YDEF", fp):
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_Obs_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
 		for line in lines_that_contain("TDEF", fp):
 			T = int(line.split()[1])
 			TD= 1  #not used
@@ -712,12 +715,13 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 	#Now compute stuff and plot
 	plt.figure(figsize=(15,15))
 
-	for L in range(nwk):
-		wk=L+1
+	k=0
+	for model in models:
+		k=k+1
 		#Forecast files--------
 		#Read mean
 		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+model+'_'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.dat','rb')
 		recl=struct.unpack('i',f.read(4))[0]
 		numval=int(recl/np.dtype('float32').itemsize)
 		#Now we read the field
@@ -727,7 +731,7 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		muf=muf[i,j]
 
 		#Read variance
-		f=open('../output/'+model+'_'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.dat','rb')
 		recl=struct.unpack('i',f.read(4))[0]
 		numval=int(recl/np.dtype('float32').itemsize)
 		#Now we read the field
@@ -741,7 +745,7 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		#
 		muc0=np.empty([T,H,W])  #define array for later use
 		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+		f=open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_Obs_'+tar+'_'+monf+str(fyr)+'.dat','rb')
 		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
 		for it in range(T):
 			#Now we read the field
@@ -796,7 +800,7 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		plt.text(min(t.ppf(0.0001, dof, loc=muf, scale=scalef),t.ppf(0.0001, dof, loc=muc, scale=scalec)), -20, 'P(fcst)/P(clim)='+str(round(oddsrc,1)), **style)
 		plt.legend(loc='best', frameon=False)
 		# Add title and axis names
-		plt.title('Probabilities of Exceedance for Week '+str(wk))
+		plt.title('Probabilities of Exceedance')
 		plt.xlabel('Rainfall')
 		plt.ylabel('Probability (%)')
 		# Limits for the Y axis
@@ -808,7 +812,7 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		plt.axvline(x=thrs, color='k', linestyle='--')
 		plt.legend(loc='best', frameon=False)
 		# Add title and axis names
-		plt.title('Probability Density Functions for Week '+str(wk))
+		plt.title('Probability Density Functions')
 		plt.xlabel('Rainfall')
 		plt.ylabel('')
 		# Limits for the Y axis
@@ -864,7 +868,7 @@ def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, wetday_thres
 				'NASA-GEOSS2S': 'https://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/.NASA-GEOSS2S/.HINDCAST/.MONTHLY/.prec/S/%280000%201%20'+mon+'%201982-2009%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
 				'NCEP-CFSv2': 'https://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/.NCEP-CFSv2/.HINDCAST/.MONTHLY/.prec/S/%280000%201%20'+mon+'%201982-2009%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
 		}
-		# calls curl to download data 
+		# calls curl to download data
 		url=dic[model]
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_RFREQ_"+tar+"_ini"+mon+".tsv")
@@ -995,7 +999,7 @@ def GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 			force_download = True
 	if force_download:
 		#dictionary:
-		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/SG/281%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
+		dic = {'NCEP-CFSv2': 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.VGRD/SOURCES/.NOAA/.NCEP/.EMC/.CFSv2/.REALTIME_ENSEMBLE/.PGBF/.pressure_level/.SPFH/mul/P/850/VALUE/S/%281%20'+monf+'%20'+str(fyr)+'%29/VALUES/L/'+tgti+'/'+tgtf+'/RANGEEDGES/%5BL%5D//keepgrids/average/%5BM%5D/average/Y/'+str(sla1)+'/'+str(nla1)+'/RANGEEDGES/X/'+str(wlo1)+'/'+str(elo1)+'/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BL/S/add%5D/cptv10.tsv',
 		}
 		# calls curl to download data
 		url=dic[model]
