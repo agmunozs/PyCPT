@@ -151,7 +151,7 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
 		ax.add_feature(states_provinces, edgecolor='gray')
 	plt.show()
 
-def plteofs(models,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
+def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
 	"""A simple function for ploting EOFs computed by CPT
 
 	PARAMETERS
@@ -320,7 +320,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mons)
 
 	PARAMETERS
 	----------
-		score: the score 
+		score: the score
 		loni: western longitude
 		lone: eastern longitude
 		lati: southern latitude
