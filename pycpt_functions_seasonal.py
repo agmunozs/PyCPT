@@ -831,7 +831,7 @@ def GetHindcasts(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Hindcasts file doesn't exist --downloading")
+			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -855,7 +855,7 @@ def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, wetday_thres
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Hindcasts file doesn't exist --downloading")
+			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -879,7 +879,7 @@ def GetHindcasts_UQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, for
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Hindcasts file doesn't exist --downloading")
+			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -897,7 +897,7 @@ def GetHindcasts_VQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, for
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Hindcasts file doesn't exist --downloading")
+			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -915,7 +915,7 @@ def GetObs(predictand, wlo2, elo2, sla2, nla2, tar, obs_source, hdate_last, forc
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Obs precip file doesn't exist --downloading")
+			print("Obs precip file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/%28Jan%201982%29/%28Dec%202010%29/RANGE/T/%28'+tar+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
@@ -930,7 +930,7 @@ def GetObs_RFREQ(predictand, wlo2, elo2, sla2, nla2, wetday_threshold, threshold
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Obs freq-rainfall file doesn't exist --downloading")
+			print("Obs freq-rainfall file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#Need to work on it
@@ -952,7 +952,7 @@ def GetForecast(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Forecasts file doesn't exist --downloading")
+			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -976,7 +976,7 @@ def GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Forecasts file doesn't exist --downloading")
+			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -994,7 +994,7 @@ def GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Forecasts file doesn't exist --downloading")
+			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1012,7 +1012,7 @@ def GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday
 			s = ff.readline()
 		except OSError as err:
 			print("Warning: {0}".format(err))
-			print("Forecasts file doesn't exist --downloading")
+			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:  #CFSv2 needs to be transformed to RFREQ!
