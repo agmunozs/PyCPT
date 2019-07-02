@@ -1,8 +1,9 @@
-#This is PyCPT_functions_seasonal.py (version1.3) -- 13 June 2019
+#This is PyCPT_functions_seasonal.py (version1.3) -- 1 July 2019
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Log:
 
+#* Fixed bug with plotting functions when selecting a subset of the seasons, and added start time for forecast file in CPT script -- AGM, July 1st 2019
 #* Added VQ and UQ from CFSv2. User can now select the seasons to visualize in the skill and EOF maps. Fixed bug related to coordinate selection in CHIRPS, TRMM and CPC. -- AGM, June 13th 2019
 #* First Notebook seasonal version -- AGM, May 7th 2019
 #* Several PyCPT sub-seasonal versions (through v1.2) --see logs in that version 2018-present
@@ -151,7 +152,7 @@ def pltdomain(loni1,lone1,lati1,late1,loni2,lone2,lati2,late2):
 		ax.add_feature(states_provinces, edgecolor='gray')
 	plt.show()
 
-def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mons):
+def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,mons):
 	"""A simple function for ploting EOFs computed by CPT
 
 	PARAMETERS
@@ -162,7 +163,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mon
 		lati: southern latitude
 		late: northern latitude
 	"""
-	mol=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+	#mol=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
 	mode=mode-1
 	nmods=len(models)
@@ -170,21 +171,23 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mon
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	tari=tgts[0]
 	model=models[0]
+	monn=mol[0]
+	nsea=len(mons)
 	M=3
 	#Read  grid
-	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tari+'_Jan.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tari+'_'+monn+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
 			W = int(line.split()[1])
 			XD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tari+'_Jan.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tari+'_'+monn+'.ctl', "r") as fp:
 		for line in lines_that_contain("YDEF", fp):
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_Jan.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_'+monn+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
 			Wy = int(line.split()[1])
 			XDy= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_Jan.ctl', "r") as fp:
+	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_'+monn+'.ctl', "r") as fp:
 		for line in lines_that_contain("YDEF", fp):
 			Hy = int(line.split()[1])
 			YDy= float(line.split()[4])
@@ -196,7 +199,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mon
 	for tar in mons:
 		k=k+1
 		mon=mol[tgts.index(tar)]
-		ax = plt.subplot(nmods+1,4, k, projection=ccrs.PlateCarree()) #nmods+obs
+		ax = plt.subplot(nmods+1,nsea, k, projection=ccrs.PlateCarree()) #nmods+obs
 		ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 
 		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
@@ -236,7 +239,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mon
 		ax.add_feature(states_provinces, edgecolor='gray')
 		ax.set_ybound(lower=lati, upper=late)
 
-		if k<=4:
+		if k<=nsea:
 			ax.set_title(tar)
 		#if ax.is_first_col():
 		ax.set_ylabel(model, rotation=90)
@@ -251,7 +254,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mon
 		for tar in mons:
 			k=k+1
 			mon=mol[tgts.index(tar)]
-			ax = plt.subplot(nmods+1,4, k, projection=ccrs.PlateCarree()) #nmods+obs
+			ax = plt.subplot(nmods+1,nsea, k, projection=ccrs.PlateCarree()) #nmods+obs
 			ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 			states_provinces = feature.NaturalEarthFeature(
@@ -279,7 +282,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mon
 			ax.set_ybound(lower=lati, upper=late)
 			ax.set_xbound(lower=loni, upper=lone)
 
-			if k > (nmods+1)*4-4:
+			if k > (nmods+1)*nsea-nsea:
 				pl.xlabels_bottom = True
 
 			#if ax.is_first_col():
@@ -308,14 +311,14 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts, mon
 			#cbar_ax = plt.add_axes([0.85, 0.15, 0.05, 0.7])
 			#plt.tight_layout()
 
-			plt.autoscale(enable=True)
+			#plt.autoscale(enable=True)
 			plt.subplots_adjust(bottom=0.15, top=0.9)
 			cax = plt.axes([0.2, 0.08, 0.6, 0.04])
 			cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 			cbar.set_label(label) #, rotation=270)
 			f.close()
 
-def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mons):
+def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, mons):
 	"""A simple function for ploting the statistical scores
 
 	PARAMETERS
@@ -327,7 +330,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mons)
 		late: northern latitude
 	"""
 	nmods=len(models)
-	mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+	nsea=len(mons)
 
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
@@ -348,7 +351,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mons)
 
 #			ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
 
-			ax = plt.subplot(nmods,4, k, projection=ccrs.PlateCarree())
+			ax = plt.subplot(nmods,nsea, k, projection=ccrs.PlateCarree())
 			ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
 
 			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
@@ -371,14 +374,14 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mons)
 			pl.ylabels_left = True
 			pl.ylabels_right = False
 			pl.xlabels_bottom = False
-			if k > (nmods)*4-4:
+			if k > (nmods)*nsea-nsea:
 				pl.xlabels_bottom = True
 			pl.xformatter = LONGITUDE_FORMATTER
 			pl.yformatter = LATITUDE_FORMATTER
 			ax.add_feature(states_provinces, edgecolor='gray')
 			ax.set_ybound(lower=lati, upper=late)
 
-			if k<=4:
+			if k<=nsea:
 				ax.set_title(tar)
 			#for i, axi in enumerate(axes):  # need to enumerate to slice the data
 			#	axi.set_ylabel(model, fontsize=12)
@@ -653,7 +656,10 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 
 		ax.add_feature(feature.LAND)
 		ax.add_feature(feature.COASTLINE)
-		ax.set_title('Probability (%) of Exceeding '+str(thrs)+" mm/day")
+
+		if k==1:
+			ax.set_title('Probability (%) of Exceeding '+str(thrs)+" mm/day")
+
 		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
 			linewidth=2, color='gray', alpha=0.5, linestyle='--')
 		pl.xlabels_top = False
@@ -669,10 +675,14 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 			transform=ccrs.PlateCarree())
 		label = 'Probability (%) of Exceedance'
 
+		#plt.autoscale(enable=True)
+
+		plt.tight_layout()
 		plt.subplots_adjust(hspace=0)
 		plt.subplots_adjust(bottom=0.15, top=0.9)
 		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
 		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+		ax.set_ylabel(model, rotation=90)
 		cbar.set_label(label) #, rotation=270)
 		f.close()
 
@@ -1077,6 +1087,9 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 			f.write("3\n")
 			file='../input/'+model+'fcst_'+fprefix+'_'+tar+'_ini'+monf+str(fyr)+'.tsv\n'
 			f.write(file)
+			#Start forecast:
+			f.write("223\n")
+			f.write(str(fyr)+"\n")
 
 		# Opens Y input file
 		f.write("2\n")
@@ -1322,7 +1335,8 @@ def ensemblefiles(models,work):
 	"""
 	get_ipython().system("mkdir ../output/NextGen/")
 	get_ipython().system("cd ../output/NextGen/")
-	get_ipython().system("rm -Rf "+work+"_NextGen.tgz")
+	#Erase old TXT and TGZ files in folder
+	get_ipython().system("rm -Rf "+work+"_NextGen.tgz *.txt")
 	for i in range(len(models)):
 		get_ipython().system("cp ../*"+models[i]+"*.txt .")
 
