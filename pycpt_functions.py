@@ -1,8 +1,10 @@
-#This is PyCPT_functions.py (version1.2) -- 6 June 2019
+#This is PyCPT_functions.py (version1.2) -- 6 July 2019
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and AW Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Log:
 
+# 6 July 2019, AGM: added option for different thresholds in the flexible format figures
+# 30 June 2019, AGM: added option to plot percentiles in flexible format
 # 6 June 2019, AGM: fixed bug in PyIngrid related to the number of initializations used
 #					for the ECMWF model, and optimized reading multiple records in
 #					sequential Fortran binary (GrADS) files.
@@ -426,7 +428,7 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 	cbar.set_label('Probability (%)') #, rotation=270)
 	f.close()
 
-def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
 	"""A simple function for ploting probabilistic forecasts in flexible format (for a given threshold)
 
 	PARAMETERS
@@ -450,8 +452,16 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 		for line in lines_that_contain("YDEF", fp):
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
+	with open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
+		for line in lines_that_contain("TDEF", fp):
+			T = int(line.split()[1])
+			TD= 1  #not used
 
 	plt.figure(figsize=(15,15))
+
+	if ispctl:
+		thrso=thrs
+		thrst = [x * 100 for x in thrs]
 
 	for L in range(nwk):
 		wk=L+1
@@ -472,12 +482,36 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 		#Now we read the field
 		A=np.fromfile(f,dtype='float32',count=numval)
 		vari = np.transpose(A.reshape((W, H), order='F'))
-		vari[vari<0.]=np.nan #only positive values
+		vari[vari==-999.]=np.nan #only sensible values
+
+		#Obs file--------
+		#Compute obs mean and variance.
+		#
+		muc0=np.empty([T,H,W])  #define array for later use
+		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+		f=open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+		for it in range(T):
+			#Now we read the field
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+			A0=np.fromfile(f,dtype='float32',count=numval)
+			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+			muc0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
+
+		muc0[muc0==-999.]=np.nan #identify NaNs
+		muc=np.nanmean(muc0, axis=0)  #axis 0 is T
+		#Compute obs variance
+		varc=np.nanvar(muc0, axis=0)  #axis 0 is T
 
 		#Compute scale parameter for the t-Student distribution
-		scalef=np.sqrt((dof-2)/dof*vari)
+		scalef=np.sqrt(dof*vari)   #due to transformation from Gamma
+		scalec=np.sqrt((dof-2)/dof*varc)
 
-		fprob = exceedprob(thrs,dof,muf,scalef)
+		if ispctl:
+			thrs[wk-1]=t.ppf(thrso[wk-1], dof, loc=muc, scale=scalec)  #If using percentiles, compute value using climo
+
+		fprob = exceedprob(thrs[wk-1],dof,muf,scalef)
 
 		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
 		ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
@@ -492,7 +526,11 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 
 		ax.add_feature(feature.LAND)
 		ax.add_feature(feature.COASTLINE)
-		ax.set_title('Probability (%) of Exceeding '+str(thrs)+" mm/week"+' for Week '+str(wk))
+		if ispctl:
+			ax.set_title('Probability (%) of exceeding percentile '+str(int(thrst[wk-1]))+'th for Week '+str(wk))
+		else:
+			ax.set_title('Probability (%) of exceeding '+str(thrs[wk-1])+" mm/week"+' for Week '+str(wk))
+
 		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
 		 	linewidth=2, color='gray', alpha=0.5, linestyle='--')
 		pl.xlabels_top = False
@@ -515,7 +553,7 @@ def pltmapff(thrs,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,f
 		cbar.set_label(label) #, rotation=270)
 		f.close()
 
-def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+def pltprobff(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
 	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
 
 	PARAMETERS
@@ -527,6 +565,8 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 	#Implement: read degrees of freedom from CPT file
 	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
 	dof=ntrain
+	thrs=thrsn
+
 
 	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
 	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
@@ -551,6 +591,9 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 
 	#Now compute stuff and plot
 	plt.figure(figsize=(15,15))
+
+	thrso=thrs
+	print(thrso)
 
 	for L in range(nwk):
 		wk=L+1
@@ -592,30 +635,31 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 			muc0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
 
 		muc0[muc0==-999.]=np.nan #identify NaNs
-		#print(muc0)
 		muc=np.nanmean(muc0, axis=0)  #axis 0 is T
-		#print(muc)
-
 		#Compute obs variance
 		varc=np.nanvar(muc0, axis=0)  #axis 0 is T
 		#Select gridbox values
 		muc=muc[i,j]
-		print(muc)
+		#print(muc)   #Test it's actually zero
 		varc=varc[i,j]
 
 		#Compute scale parameter for the t-Student distribution
 		scalef=np.sqrt(dof*varf)   #due to transformation from Gamma
 		scalec=np.sqrt((dof-2)/dof*varc)
 
+		if ispctl:
+			thrs[wk-1]=t.ppf(thrso[wk-1], dof, loc=muc, scale=scalec)  #If using percentiles, compute value using climo
+			#print('Week '+str(wk)+': percentile '+str(int(thrso[wk-1]))+' is '+str(np.round(thrs[wk-1]))+' mm')
+
 		x = np.linspace(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)), 100)
 
 		style = dict(size=10, color='black')
 
 		#cprob = special.erfc((x-muc)/scalec)
-		cprob = exceedprob(thrs,dof,muc,scalec)
-		fprob = exceedprob(thrs,dof,muf,scalef)
-		cprobth = round(t.sf(thrs, dof, loc=muc, scale=scalec)*100,2)
-		fprobth = round(t.sf(thrs, dof, loc=muf, scale=scalef)*100,2)
+		cprob = exceedprob(thrs[wk-1],dof,muc,scalec)
+		fprob = exceedprob(thrs[wk-1],dof,muf,scalef)
+		cprobth = np.round(t.sf(thrs[wk-1], dof, loc=muc, scale=scalec)*100,2)
+		fprobth = np.round(t.sf(thrs[wk-1], dof, loc=muf, scale=scalef)*100,2)
 		cpdf=t.pdf(x, dof, loc=muc, scale=scalec)*100
 		fpdf=t.pdf(x, dof, loc=muf, scale=scalef)*100
 		oddsrc =(fprobth/cprobth)
@@ -630,11 +674,11 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		plt.subplot(1, 2, 1)
 		plt.plot(x, t.sf(x, dof, loc=muc, scale=scalec)*100,'b-', lw=5, alpha=0.6, label='clim')
 		plt.plot(x, t.sf(x, dof, loc=muf, scale=scalef)*100,'r-', lw=5, alpha=0.6, label='fcst')
-		plt.axvline(x=thrs, color='k', linestyle='--')
-		plt.plot(thrs, fprobth,'ok')
-		plt.plot(thrs, cprobth,'ok')
-		plt.text(thrs+0.05, cprobth, str(cprobth)+'%', **style)
-		plt.text(thrs+0.05, fprobth, str(fprobth)+'%', **style)
+		plt.axvline(x=thrs[wk-1], color='k', linestyle='--')
+		plt.plot(thrs[wk-1], fprobth,'ok')
+		plt.plot(thrs[wk-1], cprobth,'ok')
+		plt.text(thrs[wk-1]+0.05, cprobth, str(cprobth)+'%', **style)
+		plt.text(thrs[wk-1]+0.05, fprobth, str(fprobth)+'%', **style)
 		#plt.text(0.1, 10, r'$\frac{P(fcst)}{P(clim)}=$'+str(round(oddsrc,1)), **style)
 		plt.text(min(t.ppf(0.0001, dof, loc=muf, scale=scalef),t.ppf(0.0001, dof, loc=muc, scale=scalec)), -20, 'P(fcst)/P(clim)='+str(round(oddsrc,1)), **style)
 		plt.legend(loc='best', frameon=False)
@@ -648,7 +692,7 @@ def pltprobff(thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_sea
 		plt.subplot(1, 2, 2)
 		plt.plot(x, cpdf,'b-', lw=5, alpha=0.6, label='clim')
 		plt.plot(x, fpdf,'r-', lw=5, alpha=0.6, label='fcst')
-		plt.axvline(x=thrs, color='k', linestyle='--')
+		plt.axvline(x=thrs[wk-1], color='k', linestyle='--')
 		#fill area under the curve --not done
 		#section = np.arange(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)), thrs, 1/20.)
 		#plt.fill_between(section,f(section))
@@ -674,7 +718,7 @@ def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nl
 			s = ff.readline()
 		except OSError as err:
 			print("OS error: {0}".format(err))
-			print("Hindcasts file doesn't exist --downloading")
+			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -697,7 +741,7 @@ def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, day1, day2, nday, fyr, mon, os, k
 			s = ff.readline()
 		except OSError as err:
 			print("OS error: {0}".format(err))
-			print("Hindcasts file doesn't exist --downloading")
+			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -718,7 +762,7 @@ def GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, 
 			s = ff.readline()
 		except OSError as err:
 			print("OS error: {0}".format(err))
-			print("Obs precip file doesn't exist --downloading")
+			print("Obs precip file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -740,7 +784,7 @@ def GetObs_RFREQ(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, 
 			s = ff.readline()
 		except OSError as err:
 			print("OS error: {0}".format(err))
-			print("Obs freq-rainfall file doesn't exist --downloading")
+			print("Obs freq-rainfall file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionaries:
@@ -767,7 +811,7 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, key, w
 			s = ff.readline()
 		except OSError as err:
 			print("OS error: {0}".format(err))
-			print("Forecasts file doesn't exist --downloading")
+			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -789,7 +833,7 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			s = ff.readline()
 		except OSError as err:
 			print("OS error: {0}".format(err))
-			print("Forecasts file doesn't exist --downloading")
+			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:  #CFSv2 needs to be transformed to RFREQ!
