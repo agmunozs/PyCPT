@@ -336,6 +336,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	k=0
 	for model in models:
+		print(model)
 		for tar in mons:
 			k=k+1
 			mon=mo[tgts.index(tar)]
@@ -682,6 +683,14 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 		plt.subplots_adjust(bottom=0.15, top=0.9)
 		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
 		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+
+		for i, row in enumerate(ax):
+			for j, cell in enumerate(row):
+				if i == len(ax) - 1:
+					cell.set_xlabel("noise column: {0:d}".format(j + 1))
+				if j == 0:
+					cell.set_ylabel("noise row: {0:d}".format(i + 1))
+
 		ax.set_ylabel(model, rotation=90)
 		cbar.set_label(label) #, rotation=270)
 		f.close()
@@ -1201,6 +1210,7 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 			f.write("302\n")
 			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tar+'_'+mon+'\n'
 			f.write(file)
+		if MOS=='CCA':
 			#Y EOF
 			f.write("312\n")
 			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tar+'_'+mon+'\n'
