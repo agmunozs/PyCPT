@@ -225,7 +225,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		ax.add_feature(states_provinces, edgecolor='gray')
 		ax.set_ybound(lower=lati, upper=late)
 
-		if score == 'CCAFCST_V' or score == 'PCRFCST_V':
+		if score == 'CCAFCST_V' or score == 'PCRFCST_V' or score == 'noMOSFCST_V':
 			f=open('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat','rb')
 			recl=struct.unpack('i',f.read(4))[0]
 			numval=int(recl/np.dtype('float32').itemsize)
@@ -859,7 +859,7 @@ def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,
 		elif MOS=='PCR':
 			# Opens PCR
 			f.write("612\n")
-		elif MOS=='PCR':
+		elif MOS=='ELR':
 			# Opens GCM; because the calibration takes place via sklearn.linear_model (in the Jupyter notebook)
 			f.write("614\n")
 		elif MOS=='None':
@@ -1041,58 +1041,58 @@ def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,
 		file='../output/'+fprefix+'_'+mpref+'_RocAbove_'+training_season+'_wk'+str(wk)+'\n'
 		f.write(file)
 
-		if MOS=='CCA' or MOS=='PCR':   #DO NOT USE CPT to compute probabilities if MOS='None' --use IRIDL for direct counting
-			#######FORECAST(S)	!!!!!
-			# Probabilistic (3 categories) maps
-			f.write("455\n")
-			# Output results
-			f.write("111\n")
-			# Forecast probabilities
-			f.write("501\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			#502 # Forecast odds
-			#Exit submenu
-			f.write("0\n")
+		#Now implementing forecasts for also No MOS case. Perhaps the best is to compute everything in the DL.
+		#if MOS=='CCA' or MOS=='PCR':   #DO NOT USE CPT to compute probabilities if MOS='None' --use IRIDL for direct counting
+		#######FORECAST(S)	!!!!!
+		# Probabilistic (3 categories) maps
+		f.write("455\n")
+		# Output results
+		f.write("111\n")
+		# Forecast probabilities
+		f.write("501\n")
+		file='../output/'+fprefix+'_'+mpref+'FCST_P_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+		f.write(file)
+		#502 # Forecast odds
+		#Exit submenu
+		f.write("0\n")
 
-			# Compute deterministc values and prediction limits
-			f.write("454\n")
-			# Output results
-			f.write("111\n")
-			# Forecast values
-			f.write("511\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_V_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			#502 # Forecast odds
+		# Compute deterministc values and prediction limits
+		f.write("454\n")
+		# Output results
+		f.write("111\n")
+		# Forecast values
+		f.write("511\n")
+		file='../output/'+fprefix+'_'+mpref+'FCST_V_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+		f.write(file)
+		#502 # Forecast odds
 
 
-			#######Following files are used to plot the flexible format
-			# Save cross-validated predictions
-			f.write("201\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_xvPr_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			# Save deterministic forecasts [mu for Gaussian fcst pdf]
-			f.write("511\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			# Save prediction error variance [sigma^2 for Gaussian fcst pdf]
-			f.write("514\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			# Save z
-			f.write("532\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_z_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
-			# Save predictand [to build predictand pdf]
-			f.write("102\n")
-			file='../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
-			f.write(file)
+		#######Following files are used to plot the flexible format
+		# Save cross-validated predictions
+		f.write("201\n")
+		file='../output/'+fprefix+'_'+mpref+'FCST_xvPr_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+		f.write(file)
+		# Save deterministic forecasts [mu for Gaussian fcst pdf]
+		f.write("511\n")
+		file='../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+		f.write(file)
+		# Save prediction error variance [sigma^2 for Gaussian fcst pdf]
+		f.write("514\n")
+		file='../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+		f.write(file)
+		# Save z
+		#f.write("532\n")
+		#file='../output/'+fprefix+'_'+mpref+'FCST_z_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+		#f.write(file)
+		# Save predictand [to build predictand pdf]
+		f.write("102\n")
+		file='../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'\n'
+		f.write(file)
 
-			#Exit submenu
-			f.write("0\n")
+		#Exit submenu
+		f.write("0\n")
 
-			# Stop saving  (not needed in newest version of CPT)
-
+		# Stop saving  (not needed in newest version of CPT)
 		# Exit
 		f.write("0\n")
 
