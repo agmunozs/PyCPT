@@ -202,17 +202,25 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		ax = plt.subplot(nmods+1,nsea, k, projection=ccrs.PlateCarree()) #nmods+obs
 		ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.dat','rb')
-		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
-		for mo in range(M):
-			#Now we read the field
-			recl=struct.unpack('i',f.read(4))[0]
-			numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
-			A0=np.fromfile(f,dtype='float32',count=numval)
-			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
-			eofy[mo,:,:]= np.transpose(A0.reshape((Wy, Hy), order='F'))
-		eofy[eofy==-999.]=np.nan #nans
+		if mpref=='CCA'
+			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+			f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.dat','rb')
+			#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+			for mo in range(M):
+				#Now we read the field
+				recl=struct.unpack('i',f.read(4))[0]
+				numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+				A0=np.fromfile(f,dtype='float32',count=numval)
+				endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+				eofy[mo,:,:]= np.transpose(A0.reshape((Wy, Hy), order='F'))
+
+			eofy[eofy==-999.]=np.nan #nans
+
+			CS=plt.pcolormesh(np.linspace(loni, loni+Wy*XDy,num=Wy), np.linspace(lati+Hy*YDy, lati, num=Hy), eofy[mode,:,:],
+			vmin=-.1,vmax=.1,
+			cmap=plt.cm.bwr,
+			transform=ccrs.PlateCarree())
+			label = 'EOF charges'
 
 		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 		states_provinces = feature.NaturalEarthFeature(
@@ -244,11 +252,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		#if ax.is_first_col():
 		ax.set_ylabel(model, rotation=90)
 
-		CS=plt.pcolormesh(np.linspace(loni, loni+Wy*XDy,num=Wy), np.linspace(lati+Hy*YDy, lati, num=Hy), eofy[mode,:,:],
-		vmin=-.1,vmax=.1,
-		cmap=plt.cm.bwr,
-		transform=ccrs.PlateCarree())
-		label = 'EOF charges'
+
 
 	for model in models:
 		for tar in mons:
@@ -1210,7 +1214,10 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 			f.write("302\n")
 			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tar+'_'+mon+'\n'
 			f.write(file)
+			#Exit submenu
+			f.write("0\n")
 		if MOS=='CCA':
+			f.write("111\n")
 			#Y EOF
 			f.write("312\n")
 			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tar+'_'+mon+'\n'
