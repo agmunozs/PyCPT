@@ -202,7 +202,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		ax = plt.subplot(nmods+1,nsea, k, projection=ccrs.PlateCarree()) #nmods+obs
 		ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 
-		if mpref=='CCA'
+		if mpref=='CCA':
 			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
 			f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.dat','rb')
 			#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
