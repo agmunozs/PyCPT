@@ -1,4 +1,0 @@
-xmlns:cpt=http://iri.columbia.edu/CPT/v10/
-cpt:field=X_CCA_scores, cpt:nrow=1, cpt:ncol=5, cpt:row=T, cpt:col=index
-	1	2	3	4	5
-2019-07/09	0.16328858776201816	0.47474004038735329	-0.59643286038774035	-0.38806330307484010	0.37022055077632660
