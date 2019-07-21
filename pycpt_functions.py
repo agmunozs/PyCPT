@@ -1,8 +1,9 @@
-#This is PyCPT_functions.py (version1.3) -- 17 July 2019
+#This is PyCPT_functions.py (version1.3) -- 21 July 2019
 #Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), SJ Mason, T Turkington (NEA)
 #Notes: be sure it matches version of PyCPT
 #Log:
 
+# 21 July 2019, AGM: added functions to download noMOS netcdf probabilistic forecast files and plot them.
 # 17 July 2019, AGM: noMOS now uses clim period that is consistent with the raw forecast;
 #					 several related minor changes to different functions.
 # 16 July 2019, TK: fixed bug in Obs_RFREQ and pltmapProb routines;
@@ -43,6 +44,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.colors import LinearSegmentedColormap
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+from netCDF4 import Dataset
 
 
 warnings.filterwarnings("ignore")
@@ -72,6 +74,72 @@ class MidpointNormalize(colors.Normalize):
         # simple example...
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
+
+def ncdump(nc_fid, verb=True):
+    '''
+    ncdump outputs dimensions, variables and their attribute information.
+    The information is similar to that of NCAR's ncdump utility.
+    ncdump requires a valid instance of Dataset.
+	Note: Modified by Ángel G. Muñoz from original version by Chris Slocum - CSU.
+
+    Parameters
+    ----------
+    nc_fid : netCDF4.Dataset
+        A netCDF4 dateset object
+    verb : Boolean
+        whether or not nc_attrs, nc_dims, and nc_vars are printed
+
+    Returns
+    -------
+    nc_attrs : list
+        A Python list of the NetCDF file global attributes
+    nc_dims : list
+        A Python list of the NetCDF file dimensions
+    nc_vars : list
+        A Python list of the NetCDF file variables
+    '''
+    def print_ncattr(key):
+        """
+        Prints the NetCDF file attributes for a given key
+
+        Parameters
+        ----------
+        key : unicode
+            a valid netCDF4.Dataset.variables key
+        """
+        try:
+            print ("\t\ttype:", repr(nc_fid.variables[key].dtype))
+            for ncattr in nc_fid.variables[key].ncattrs():
+                print ('\t\t%s:' % ncattr,\
+                      repr(nc_fid.variables[key].getncattr(ncattr)))
+        except KeyError:
+            print ("\t\tWARNING: %s does not contain variable attributes" % key)
+
+    # NetCDF global attributes
+    nc_attrs = nc_fid.ncattrs()
+    if verb:
+        print ("NetCDF Global Attributes:")
+        for nc_attr in nc_attrs:
+            print ('\t%s:' % nc_attr, repr(nc_fid.getncattr(nc_attr)))
+    nc_dims = [dim for dim in nc_fid.dimensions]  # list of nc dimensions
+    # Dimension shape information.
+    if verb:
+        print ("NetCDF dimension information:")
+        for dim in nc_dims:
+            print ("\tName:", dim)
+            print ("\t\tsize:", len(nc_fid.dimensions[dim]))
+            print_ncattr(dim)
+    # Variable information.
+    nc_vars = [var for var in nc_fid.variables]  # list of nc variables
+    if verb:
+        print ("NetCDF variable information:")
+        for var in nc_vars:
+            if var not in nc_dims:
+                print ('\tName:', var)
+                print ("\t\tdimensions:", nc_fid.variables[var].dimensions)
+                print ("\t\tsize:", nc_fid.variables[var].size)
+                print_ncattr(var)
+    return nc_attrs, nc_dims, nc_vars
 
 def PrepFiles(rainfall_frequency, threshold_pctle, wlo1, wlo2,elo1, elo2,sla1, sla2,nla1, nla2, day1, day2, fday, nday, fyr, mon, os, authkey, wk, wetday_threshold, nlag, training_season, hstep, model, obs_source, hdate_last, force_download):
 	"""Function to download (or not) the needed files"""
@@ -267,7 +335,7 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		f.close()
 
 def skilltab(score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
-	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
+	"""Creates a table with min, max and average values of skills computed over a certain domain
 
 	PARAMETERS
 	----------
@@ -315,6 +383,74 @@ def skilltab(score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,t
 	return df
 	f.close()
 
+def pltmapProbNC(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
+	"""A simple function for ploting probabilistic forecasts from netcdf files
+	[FOR NOW IT ONLY WORKS FOR ECMWF]
+	"""
+	plt.figure(figsize=(15,15))
+	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+	states_provinces = feature.NaturalEarthFeature(
+		category='cultural',
+	#	name='admin_1_states_provinces_shp',
+		name='admin_0_countries',
+		scale='10m',
+		facecolor='none')
+
+	for L in range(nwk):
+		wk=L+1
+
+		#Read each tercile probabilities using the 3 different files downloaded from IRIDL
+		nc_abo = Dataset('../input/noMOS/modelfcst_above_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_bel = Dataset('../input/noMOS/modelfcst_below_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_attrs, nc_dims, nc_vars = ncdump(nc_abo,verb=False)
+		# Extract data from NetCDF file
+		lats = nc_abo.variables['Y'][:]
+		H = nc_abo.variables['Y'].size
+		YD = 1.5 #ECMWF; in the future, read it from the Y:pointwidth attribute in the NC file
+		lons = nc_abo.variables['X'][:]
+		W = nc_abo.variables['X'].size
+		XD = 1.5 #ECMWF; in the future, read it from the X:pointwidth attribute in the NC file
+		probab = nc_abo.variables['flag'][:]
+		probbe = nc_bel.variables['flag'][:]
+		probno = [(x * 0.) + 100 for x in probab] - probab - probbe #we just compute the normal cat as the residual, to simplify things
+
+
+		var=[probbe,probno,probab]
+
+		tit=['Below Normal','Normal','Above Normal']
+		for i in range(3):
+			ax2=plt.subplot(nwk, 3, (L*3)+(i+1),projection=ccrs.PlateCarree())
+			ax2.set_title("Week "+str(wk)+ ": "+tit[i])
+			ax2.add_feature(feature.LAND)
+			ax2.add_feature(feature.COASTLINE)
+			#ax2.set_ybound(lower=lati, upper=late)
+			pl2=ax2.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+				linewidth=2, color='gray', alpha=0.5, linestyle='--')
+			pl2.xlabels_top = False
+			pl2.ylabels_left = True
+			pl2.ylabels_right = False
+			pl2.xformatter = LONGITUDE_FORMATTER
+			pl2.yformatter = LATITUDE_FORMATTER
+			ax2.add_feature(states_provinces, edgecolor='black')
+			ax2.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
+
+			ax2.set_ybound(lower=lati, upper=late)
+			ax2.set_xbound(lower=loni, upper=lone)
+			#ax2.set_adjustable('box')
+			#ax2.set_aspect('auto',adjustable='datalim',anchor='C')
+			CS=ax2.pcolormesh(np.linspace(lons[0], lons[-1],num=W), np.linspace(lats[0], lats[-1], num=H), np.squeeze(var[i]),
+			vmin=0,vmax=100,
+			cmap=plt.cm.bwr,
+			transform=ccrs.PlateCarree())
+			#plt.show(block=False)
+
+	plt.subplots_adjust(hspace=0)
+	plt.subplots_adjust(bottom=0.15, top=0.9)
+	cax = plt.axes([0.2, 0.08, 0.6, 0.04])
+	cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+	cbar.set_label('Probability (%)') #, rotation=270)
+
+
 def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk):
 	"""A simple function for ploting probabilistic forecasts
 
@@ -327,79 +463,80 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 		late: northern latitude
 		title: title
 	"""
-	#Need this score to be defined by the calibration method!!!
-	score = mpref+'FCST_P'
+	if mpref=='noMOS':
+		pltmapProbNC(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk)
+	else:
+		#Need this score to be defined by the calibration method!!!
+		score = mpref+'FCST_P'
 
-	plt.figure(figsize=(15,20))
-
-	for L in range(nwk):
-		wk=L+1
-		#Read grads binary file size H, W  --it assumes that 2AFC file exists (template for final domain size)
-		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
-			for line in lines_that_contain("XDEF", fp):
-				W = int(line.split()[1])
-				XD= float(line.split()[4])
-		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
-			for line in lines_that_contain("YDEF", fp):
-				H = int(line.split()[1])
-				YD= float(line.split()[4])
-
-		#Prepare to read grads binary file  [float32 for Fortran sequential binary files]
-		Record = np.dtype(('float32', H*W))
-
+		plt.figure(figsize=(15,15))
 		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 		states_provinces = feature.NaturalEarthFeature(
 			category='cultural',
-#			name='admin_1_states_provinces_shp',
+	#		name='admin_1_states_provinces_shp',
 			name='admin_0_countries',
 			scale='10m',
 			facecolor='none')
 
+		for L in range(nwk):
+			wk=L+1
+			#Read grads binary file size H, W  --it assumes that 2AFC file exists (template for final domain size)
+			with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+				for line in lines_that_contain("XDEF", fp):
+					W = int(line.split()[1])
+					XD= float(line.split()[4])
+			with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+				for line in lines_that_contain("YDEF", fp):
+					H = int(line.split()[1])
+					YD= float(line.split()[4])
 
-		#B = np.fromfile('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat',dtype=Record, count=-1).astype('float')
-		f=open('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat','rb')
+			#Prepare to read grads binary file  [float32 for Fortran sequential binary files]
+			Record = np.dtype(('float32', H*W))
 
-		tit=['Below Normal','Normal','Above Normal']
-		for i in range(3):
-				#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-				recl=struct.unpack('i',f.read(4))[0]
-				numval=int(recl/np.dtype('float32').itemsize)
-				#We now read the field for that record (probabilistic files have 3 records: below, normal and above)
-				B=np.fromfile(f,dtype='float32',count=numval) #astype('float')
-				endrec=struct.unpack('i',f.read(4))[0]
-				var = np.flip(np.transpose(B.reshape((W, H), order='F')),0)
-				var[var<0]=np.nan #only positive values
-				ax2=plt.subplot(nwk, 3, (L*3)+(i+1),projection=ccrs.PlateCarree())
-				ax2.set_title("Week "+str(wk)+ ": "+tit[i])
-				ax2.add_feature(feature.LAND)
-				ax2.add_feature(feature.COASTLINE)
-				#ax2.set_ybound(lower=lati, upper=late)
-				pl2=ax2.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-					linewidth=2, color='gray', alpha=0.5, linestyle='--')
-				pl2.xlabels_top = False
-				pl2.ylabels_left = True
-				pl2.ylabels_right = False
-				pl2.xformatter = LONGITUDE_FORMATTER
-				pl2.yformatter = LATITUDE_FORMATTER
-				ax2.add_feature(states_provinces, edgecolor='gray')
-				ax2.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
+			#B = np.fromfile('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat',dtype=Record, count=-1).astype('float')
+			f=open('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat','rb')
 
-				#ax2.set_ybound(lower=lati, upper=late)
-				#ax2.set_xbound(lower=loni, upper=lone)
-				#ax2.set_adjustable('box')
-				#ax2.set_aspect('auto',adjustable='datalim',anchor='C')
-				CS=ax2.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati,lati+H*YD, num=H), var,
-				vmin=0,vmax=100,
-				cmap=plt.cm.bwr,
-				transform=ccrs.PlateCarree())
-				#plt.show(block=False)
+			tit=['Below Normal','Normal','Above Normal']
+			for i in range(3):
+					#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+					recl=struct.unpack('i',f.read(4))[0]
+					numval=int(recl/np.dtype('float32').itemsize)
+					#We now read the field for that record (probabilistic files have 3 records: below, normal and above)
+					B=np.fromfile(f,dtype='float32',count=numval) #astype('float')
+					endrec=struct.unpack('i',f.read(4))[0]
+					var = np.flip(np.transpose(B.reshape((W, H), order='F')),0)
+					var[var<0]=np.nan #only positive values
+					ax2=plt.subplot(nwk, 3, (L*3)+(i+1),projection=ccrs.PlateCarree())
+					ax2.set_title("Week "+str(wk)+ ": "+tit[i])
+					ax2.add_feature(feature.LAND)
+					ax2.add_feature(feature.COASTLINE)
+					#ax2.set_ybound(lower=lati, upper=late)
+					pl2=ax2.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+						linewidth=2, color='gray', alpha=0.5, linestyle='--')
+					pl2.xlabels_top = False
+					pl2.ylabels_left = True
+					pl2.ylabels_right = False
+					pl2.xformatter = LONGITUDE_FORMATTER
+					pl2.yformatter = LATITUDE_FORMATTER
+					ax2.add_feature(states_provinces, edgecolor='gray')
+					ax2.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
 
-	plt.subplots_adjust(hspace=0)
-	plt.subplots_adjust(bottom=0.15, top=0.9)
-	cax = plt.axes([0.2, 0.08, 0.6, 0.04])
-	cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
-	cbar.set_label('Probability (%)') #, rotation=270)
-	f.close()
+					#ax2.set_ybound(lower=lati, upper=late)
+					#ax2.set_xbound(lower=loni, upper=lone)
+					#ax2.set_adjustable('box')
+					#ax2.set_aspect('auto',adjustable='datalim',anchor='C')
+					CS=ax2.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati,lati+H*YD, num=H), var,
+					vmin=0,vmax=100,
+					cmap=plt.cm.bwr,
+					transform=ccrs.PlateCarree())
+					#plt.show(block=False)
+
+		plt.subplots_adjust(hspace=0)
+		plt.subplots_adjust(bottom=0.15, top=0.9)
+		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
+		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+		cbar.set_label('Probability (%)') #, rotation=270)
+		f.close()
 
 def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
 	"""A simple function for ploting probabilistic forecasts in flexible format (for a given threshold)
@@ -689,8 +826,8 @@ def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nl
 			ff=open("model_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("OS error: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
+			#print("OS error: {0}".format(err))
+			print("Hindcasts file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -712,8 +849,8 @@ def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, day1, day2, nday, fyr, mon, os, k
 			ff=open("model_RFREQ_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("OS error: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
+			#print("OS error: {0}".format(err))
+			print("Hindcasts file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -733,8 +870,8 @@ def GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, 
 			ff=open("obs_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("OS error: {0}".format(err))
-			print("Obs precip file doesn't exist --SOLVING ERROR: downloading file")
+			#print("OS error: {0}".format(err))
+			print("Obs precip file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -755,8 +892,8 @@ def GetObs_RFREQ(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, 
 			ff=open("obs_RFREQ_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("OS error: {0}".format(err))
-			print("Obs freq-rainfall file doesn't exist --SOLVING ERROR: downloading file")
+			#print("OS error: {0}".format(err))
+			print("Obs freq-rainfall file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#dictionaries:
@@ -782,8 +919,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=open("modelfcst_precip_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("OS error: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
+			#print("OS error: {0}".format(err))
+			print("Forecasts file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -805,8 +942,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=open("noMOS/modelshort_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("OS error: {0}".format(err))
-			print("Short hindcast file doesn't exist --SOLVING ERROR: downloading file")
+			#print("OS error: {0}".format(err))
+			print("Short hindcast file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -823,8 +960,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=open("noMOS/obsshort_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("OS error: {0}".format(err))
-			print("Short obs precip file doesn't exist --SOLVING ERROR: downloading file")
+			#print("OS error: {0}".format(err))
+			print("Short obs precip file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -836,14 +973,50 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/obsshort_precip_"+mon+"_wk"+str(week)+".tsv.gz")
 		get_ipython().system("gunzip -f noMOS/obsshort_precip_"+mon+"_wk"+str(week)+".tsv.gz")
 
+	#The next block is used for noMOS probabilistic forecasts ##Added by AGM
+	#Above normal:
+	if not force_download:
+		try:
+			ff=open("noMOS/modelfcst_above_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
+			s = ff.readline()
+		except OSError as err:
+			#print("OS error: {0}".format(err))
+			print("Above normal probability forecast file doesn't exist --SOLVING: downloading file")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = { 'ECMWF': 'http://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.forecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE%5BL%5Ddifferences%5BM%5Daverage%5Bhdate%5D0.33/0.66/0/replacebypercentile/percentile/0.66/VALUE/flaggt%5BM%5Daverage/100/mul//long_name/%28Probability%20of%20Above%20Normal%20Tercile%29def//units/%28%25%29def/data.nc',
+		}
+		# calls curl to download data
+		url=dic[model]
+		#print("\n Short hindcast URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/modelfcst_above_PRCP_"+mon+"_wk"+str(week)+".nc")
+	#Below normal:
+	if not force_download:
+		try:
+			ff=open("noMOS/modelfcst_below_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
+			s = ff.readline()
+		except OSError as err:
+			#print("OS error: {0}".format(err))
+			print("Below normal probability forecast file doesn't exist --SOLVING: downloading file")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = { 'ECMWF': 'http://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.forecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE%5BL%5Ddifferences%5BM%5Daverage%5Bhdate%5D0.33/0.66/0/replacebypercentile/percentile/0.33/VALUE/flaglt%5BM%5Daverage/100/mul//long_name/%28Probability%20of%20Below%20Normal%20Tercile%29def//units/%28%25%29def/data.nc',
+		}
+		# calls curl to download data
+		url=dic[model]
+		#print("\n Short hindcast URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/modelfcst_below_PRCP_"+mon+"_wk"+str(week)+".nc")
+
 def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, wetday_threshold, nlag, model, hdate_last,force_download):
 	if not force_download:
 		try:
 			ff=open("modelfcst_RFREQ_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("OS error: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
+			#print("OS error: {0}".format(err))
+			print("Forecasts file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#dictionary:  #CFSv2 needs to be transformed to RFREQ!
