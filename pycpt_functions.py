@@ -977,8 +977,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 	#Above normal:
 	if not force_download:
 		try:
-			ff=open("noMOS/modelfcst_above_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
-			s = ff.readline()
+			ff=Dataset('noMOS/modelfcst_above_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
+			s = ff.variables['Y'][:]
 		except OSError as err:
 			#print("OS error: {0}".format(err))
 			print("Above normal probability forecast file doesn't exist --SOLVING: downloading file")
@@ -994,8 +994,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 	#Below normal:
 	if not force_download:
 		try:
-			ff=open("noMOS/modelfcst_below_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
-			s = ff.readline()
+			ff=Dataset("noMOS/modelfcst_below_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
+			s = ff.variables['Y'][:]
 		except OSError as err:
 			#print("OS error: {0}".format(err))
 			print("Below normal probability forecast file doesn't exist --SOLVING: downloading file")
