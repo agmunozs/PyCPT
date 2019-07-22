@@ -538,8 +538,10 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 		cbar.set_label('Probability (%)') #, rotation=270)
 		f.close()
 
-def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+def pltmapffNC(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
 	"""A simple function for ploting probabilistic forecasts in flexible format (for a given threshold)
+	using netcdf files
+	[FOR NOW, IT ONLY WORKS FOR ECMWF]
 
 	PARAMETERS
 	----------
@@ -551,21 +553,7 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 	"""
 	#Implement: read degrees of freedom from CPT file
 	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
-	dof=ntrain
-
-	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("XDEF", fp):
-			W = int(line.split()[1])
-			XD= float(line.split()[4])
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("YDEF", fp):
-			H = int(line.split()[1])
-			YD= float(line.split()[4])
-	with open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("TDEF", fp):
-			T = int(line.split()[1])
-			TD= 1  #not used
+	dof=20
 
 	plt.figure(figsize=(15,15))
 
@@ -573,46 +561,34 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 		thrso=thrs
 		thrst = [x * 100 for x in thrs]
 
+	#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+	states_provinces = feature.NaturalEarthFeature(
+		category='cultural',
+	#	name='admin_1_states_provinces_shp',
+		name='admin_0_countries',
+		scale='10m',
+		facecolor='none')
+
 	for L in range(nwk):
 		wk=L+1
-		#Read mean
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		muf = np.transpose(A.reshape((W, H), order='F'))
-		muf[muf==-999.]=np.nan #only sensible values
 
-		#Read variance
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		vari = np.transpose(A.reshape((W, H), order='F'))
-		vari[vari==-999.]=np.nan #only sensible values
-
-		#Obs file--------
-		#Compute obs mean and variance.
-		#
-		muc0=np.empty([T,H,W])  #define array for later use
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
-		for it in range(T):
-			#Now we read the field
-			recl=struct.unpack('i',f.read(4))[0]
-			numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
-			A0=np.fromfile(f,dtype='float32',count=numval)
-			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
-			muc0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
-
-		muc0[muc0==-999.]=np.nan #identify NaNs
-		muc=np.nanmean(muc0, axis=0)  #axis 0 is T
-		#Compute obs variance
-		varc=np.nanvar(muc0, axis=0)  #axis 0 is T
+		#Read mu and sigma (average and std) directly from the NC files
+		nc_fmu  = Dataset('../input/noMOS/modelfcst_mu_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_fstd = Dataset('../input/noMOS/modelfcst_std_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_omu  = Dataset('../input/noMOS/obs_mu_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_ostd = Dataset('../input/noMOS/obs_std_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_attrs, nc_dims, nc_vars = ncdump(nc_fmu,verb=False)
+		# Extract data from NetCDF file
+		lats = nc_fmu.variables['Y'][:]
+		H = nc_fmu.variables['Y'].size
+		YD = 1.5 #ECMWF; in the future, read it from the Y:pointwidth attribute in the NC file
+		lons = nc_fmu.variables['X'][:]
+		W = nc_fmu.variables['X'].size
+		XD = 1.5 #ECMWF; in the future, read it from the X:pointwidth attribute in the NC file
+		muf = np.squeeze(nc_fmu.variables['ratio'][:])
+		vari = (np.squeeze(nc_fstd.variables['ratio'][:]))**2
+		muc = np.squeeze(nc_omu.variables['tp'][:])
+		varc = (np.squeeze(nc_ostd.variables['tp'][:]))**2
 
 		#Compute scale parameter for the t-Student distribution
 		scalef=np.sqrt(dof*vari)   #due to transformation from Gamma
@@ -625,14 +601,6 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 
 		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
 		ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
-
-		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
-		states_provinces = feature.NaturalEarthFeature(
-			category='cultural',
-#			name='admin_1_states_provinces_shp',
-			name='admin_0_countries',
-			scale='10m',
-			facecolor='none')
 
 		ax.add_feature(feature.LAND)
 		ax.add_feature(feature.COASTLINE)
@@ -650,7 +618,7 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 		pl.yformatter = LATITUDE_FORMATTER
 		ax.add_feature(states_provinces, edgecolor='gray')
 		ax.set_ybound(lower=lati, upper=late)
-		CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), fprob,
+		CS=plt.pcolormesh(np.linspace(lons[0], lons[-1],num=W), np.linspace(lats[0], lats[-1], num=H), np.squeeze(fprob),
     		vmin=0,vmax=100,
     		cmap=plt.cm.bwr,
     		transform=ccrs.PlateCarree())
@@ -661,9 +629,136 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
 		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 		cbar.set_label(label) #, rotation=270)
-		f.close()
 
-def pltprobff(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+	"""A simple function for ploting probabilistic forecasts in flexible format (for a given threshold)
+
+	PARAMETERS
+	----------
+		thrs: the threshold, in the units of the predictand
+		loni: western longitude
+		lone: eastern longitude
+		lati: southern latitude
+		late: northern latitude
+	"""
+	if mpref=='noMOS':
+		pltmapffNC(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk)
+	else:
+		#Implement: read degrees of freedom from CPT file
+		#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
+		dof=ntrain
+
+		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
+		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+			for line in lines_that_contain("XDEF", fp):
+				W = int(line.split()[1])
+				XD= float(line.split()[4])
+		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+			for line in lines_that_contain("YDEF", fp):
+				H = int(line.split()[1])
+				YD= float(line.split()[4])
+		with open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
+			for line in lines_that_contain("TDEF", fp):
+				T = int(line.split()[1])
+				TD= 1  #not used
+
+		plt.figure(figsize=(15,15))
+
+		if ispctl:
+			thrso=thrs
+			thrst = [x * 100 for x in thrs]
+
+		for L in range(nwk):
+			wk=L+1
+			#Read mean
+			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+			f=open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			#Now we read the field
+			A=np.fromfile(f,dtype='float32',count=numval)
+			muf = np.transpose(A.reshape((W, H), order='F'))
+			muf[muf==-999.]=np.nan #only sensible values
+
+			#Read variance
+			f=open('../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			#Now we read the field
+			A=np.fromfile(f,dtype='float32',count=numval)
+			vari = np.transpose(A.reshape((W, H), order='F'))
+			vari[vari==-999.]=np.nan #only sensible values
+
+			#Obs file--------
+			#Compute obs mean and variance.
+			#
+			muc0=np.empty([T,H,W])  #define array for later use
+			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+			f=open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+			#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+			for it in range(T):
+				#Now we read the field
+				recl=struct.unpack('i',f.read(4))[0]
+				numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+				A0=np.fromfile(f,dtype='float32',count=numval)
+				endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+				muc0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
+
+			muc0[muc0==-999.]=np.nan #identify NaNs
+			muc=np.nanmean(muc0, axis=0)  #axis 0 is T
+			#Compute obs variance
+			varc=np.nanvar(muc0, axis=0)  #axis 0 is T
+
+			#Compute scale parameter for the t-Student distribution
+			scalef=np.sqrt(dof*vari)   #due to transformation from Gamma
+			scalec=np.sqrt((dof-2)/dof*varc)
+
+			if ispctl:
+				thrs[wk-1]=t.ppf(thrso[wk-1], dof, loc=muc, scale=scalec)  #If using percentiles, compute value using climo
+
+			fprob = exceedprob(thrs[wk-1],dof,muf,scalef)
+
+			ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
+			ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
+
+			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+			states_provinces = feature.NaturalEarthFeature(
+				category='cultural',
+	#			name='admin_1_states_provinces_shp',
+				name='admin_0_countries',
+				scale='10m',
+				facecolor='none')
+
+			ax.add_feature(feature.LAND)
+			ax.add_feature(feature.COASTLINE)
+			if ispctl:
+				ax.set_title('Probability (%) of exceeding percentile '+str(int(thrst[wk-1]))+'th for Week '+str(wk))
+			else:
+				ax.set_title('Probability (%) of exceeding '+str(thrs[wk-1])+" mm/week"+' for Week '+str(wk))
+
+			pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+			 	linewidth=2, color='gray', alpha=0.5, linestyle='--')
+			pl.xlabels_top = False
+			pl.ylabels_left = True
+			pl.ylabels_right = False
+			pl.xformatter = LONGITUDE_FORMATTER
+			pl.yformatter = LATITUDE_FORMATTER
+			ax.add_feature(states_provinces, edgecolor='gray')
+			ax.set_ybound(lower=lati, upper=late)
+			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), fprob,
+	    		vmin=0,vmax=100,
+	    		cmap=plt.cm.bwr,
+	    		transform=ccrs.PlateCarree())
+			label = 'Probability (%) of Exceedance'
+
+			plt.subplots_adjust(hspace=0)
+			plt.subplots_adjust(bottom=0.15, top=0.9)
+			cax = plt.axes([0.2, 0.08, 0.6, 0.04])
+			cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+			cbar.set_label(label) #, rotation=270)
+			f.close()
+
+def pltprobffNC(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
 	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
 
 	PARAMETERS
@@ -674,27 +769,22 @@ def pltprobff(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,trai
 	"""
 	#Implement: read degrees of freedom from CPT file
 	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
-	dof=ntrain
+	dof=20
 	thrs=thrsn
 
-
-	#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("XDEF", fp):
-			W = int(line.split()[1])
-			XD= float(line.split()[4])
-	with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("YDEF", fp):
-			H = int(line.split()[1])
-			YD= float(line.split()[4])
-	with open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
-		for line in lines_that_contain("TDEF", fp):
-			T = int(line.split()[1])
-			TD= 1  #not used
+	nc_fmu  = Dataset('../input/noMOS/modelfcst_mu_'+fprefix+'_'+mon+'_wk1.nc', 'r')
+	#nc_attrs, nc_dims, nc_vars = ncdump(nc_fmu,verb=False)
+	# Extract data from NetCDF file
+	lats = nc_fmu.variables['Y'][:]
+	H = nc_fmu.variables['Y'].size
+	YD = 1.5 #ECMWF; in the future, read it from the Y:pointwidth attribute in the NC file
+	lons = nc_fmu.variables['X'][:]
+	W = nc_fmu.variables['X'].size
+	XD = 1.5 #ECMWF; in the future, read it from the X:pointwidth attribute in the NC file
 
 	#Find the gridbox:
-	lonrange = np.linspace(loni, loni+W*XD,num=W)
-	latrange = np.linspace(lati+H*YD, lati, num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
+	lonrange = np.linspace(lons[0], lons[-1],num=W)
+	latrange = np.linspace(lats[0], lats[-1], num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
 	lon_grid, lat_grid = np.meshgrid(lonrange, latrange)
 	a = abs(lat_grid-lat)+abs(lon_grid-lon)
 	i,j = np.unravel_index(a.argmin(),a.shape)   #i:latitude   j:longitude
@@ -706,50 +796,20 @@ def pltprobff(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,trai
 
 	for L in range(nwk):
 		wk=L+1
-		#Forecast files--------
-		#Read mean
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		muf = np.transpose(A.reshape((W, H), order='F'))
-		muf[muf==-999.]=np.nan #identify NaNs
+		#Read mu and sigma (average and std) directly from the NC files
+		nc_fmu  = Dataset('../input/noMOS/modelfcst_mu_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_fstd = Dataset('../input/noMOS/modelfcst_std_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_omu  = Dataset('../input/noMOS/obs_mu_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_ostd = Dataset('../input/noMOS/obs_std_'+fprefix+'_'+mon+'_wk'+str(wk)+'.nc', 'r')
+		nc_attrs, nc_dims, nc_vars = ncdump(nc_fmu,verb=False)
+		# Extract data from NetCDF file
+		muf = np.squeeze(nc_fmu.variables['ratio'][:])
 		muf=muf[i,j]
-
-		#Read variance
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		recl=struct.unpack('i',f.read(4))[0]
-		numval=int(recl/np.dtype('float32').itemsize)
-		#Now we read the field
-		A=np.fromfile(f,dtype='float32',count=numval)
-		varf = np.transpose(A.reshape((W, H), order='F'))
-		varf[varf==-999.]=np.nan #identify NaNs
+		varf = (np.squeeze(nc_fstd.variables['ratio'][:]))**2
 		varf=varf[i,j]
-
-		#Obs file--------
-		#Compute obs mean and variance.
-		#
-		muc0=np.empty([T,H,W])  #define array for later use
-		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
-		f=open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
-		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
-		for it in range(T):
-			#Now we read the field
-			recl=struct.unpack('i',f.read(4))[0]
-			numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
-			A0=np.fromfile(f,dtype='float32',count=numval)
-			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
-			muc0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
-
-		muc0[muc0==-999.]=np.nan #identify NaNs
-		muc=np.nanmean(muc0, axis=0)  #axis 0 is T
-		#Compute obs variance
-		varc=np.nanvar(muc0, axis=0)  #axis 0 is T
-		#Select gridbox values
+		muc = np.squeeze(nc_omu.variables['tp'][:])
 		muc=muc[i,j]
-		#print(muc)   #Test it's actually zero
+		varc = (np.squeeze(nc_ostd.variables['tp'][:]))**2
 		varc=varc[i,j]
 
 		#Compute scale parameter for the t-Student distribution
@@ -818,7 +878,166 @@ def pltprobff(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,trai
 	#cax = plt.axes([0.2, 0.08, 0.6, 0.04])
 	#cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 	#cbar.set_label(label) #, rotation=270)
-	f.close()
+
+def pltprobff(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
+	"""A simple function for ploting probabilities of exceedance and PDFs (for a given threshold)
+
+	PARAMETERS
+	----------
+		thrs: the threshold, in the units of the predictand
+		lon: longitude
+		lat: latitude
+	"""
+	if mpref=='noMOS':
+		pltprobffNC(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk)
+	else:
+		#Implement: read degrees of freedom from CPT file
+		#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
+		dof=ntrain
+		thrs=thrsn
+
+
+		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
+		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+			for line in lines_that_contain("XDEF", fp):
+				W = int(line.split()[1])
+				XD= float(line.split()[4])
+		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+			for line in lines_that_contain("YDEF", fp):
+				H = int(line.split()[1])
+				YD= float(line.split()[4])
+		with open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk1.ctl', "r") as fp:
+			for line in lines_that_contain("TDEF", fp):
+				T = int(line.split()[1])
+				TD= 1  #not used
+
+		#Find the gridbox:
+		lonrange = np.linspace(loni, loni+W*XD,num=W)
+		latrange = np.linspace(lati+H*YD, lati, num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
+		lon_grid, lat_grid = np.meshgrid(lonrange, latrange)
+		a = abs(lat_grid-lat)+abs(lon_grid-lon)
+		i,j = np.unravel_index(a.argmin(),a.shape)   #i:latitude   j:longitude
+
+		#Now compute stuff and plot
+		plt.figure(figsize=(15,15))
+
+		thrso=thrs
+
+		for L in range(nwk):
+			wk=L+1
+			#Forecast files--------
+			#Read mean
+			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+			f=open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			#Now we read the field
+			A=np.fromfile(f,dtype='float32',count=numval)
+			muf = np.transpose(A.reshape((W, H), order='F'))
+			muf[muf==-999.]=np.nan #identify NaNs
+			muf=muf[i,j]
+
+			#Read variance
+			f=open('../output/'+fprefix+'_'+mpref+'FCST_var_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			#Now we read the field
+			A=np.fromfile(f,dtype='float32',count=numval)
+			varf = np.transpose(A.reshape((W, H), order='F'))
+			varf[varf==-999.]=np.nan #identify NaNs
+			varf=varf[i,j]
+
+			#Obs file--------
+			#Compute obs mean and variance.
+			#
+			muc0=np.empty([T,H,W])  #define array for later use
+			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+			f=open('../output/'+fprefix+'_'+mpref+'FCST_Obs_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.dat','rb')
+			#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+			for it in range(T):
+				#Now we read the field
+				recl=struct.unpack('i',f.read(4))[0]
+				numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+				A0=np.fromfile(f,dtype='float32',count=numval)
+				endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+				muc0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
+
+			muc0[muc0==-999.]=np.nan #identify NaNs
+			muc=np.nanmean(muc0, axis=0)  #axis 0 is T
+			#Compute obs variance
+			varc=np.nanvar(muc0, axis=0)  #axis 0 is T
+			#Select gridbox values
+			muc=muc[i,j]
+			#print(muc)   #Test it's actually zero
+			varc=varc[i,j]
+
+			#Compute scale parameter for the t-Student distribution
+			scalef=np.sqrt(dof*varf)   #due to transformation from Gamma
+			scalec=np.sqrt((dof-2)/dof*varc)
+
+			if ispctl:
+				thrs[wk-1]=t.ppf(thrso[wk-1], dof, loc=muc, scale=scalec)  #If using percentiles, compute value using climo
+				#print('Week '+str(wk)+': percentile '+str(int(thrso[wk-1]))+' is '+str(np.round(thrs[wk-1]))+' mm')
+
+			x = np.linspace(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)), 100)
+
+			style = dict(size=10, color='black')
+
+			#cprob = special.erfc((x-muc)/scalec)
+			cprob = exceedprob(thrs[wk-1],dof,muc,scalec)
+			fprob = exceedprob(thrs[wk-1],dof,muf,scalef)
+			cprobth = np.round(t.sf(thrs[wk-1], dof, loc=muc, scale=scalec)*100,2)
+			fprobth = np.round(t.sf(thrs[wk-1], dof, loc=muf, scale=scalef)*100,2)
+			cpdf=t.pdf(x, dof, loc=muc, scale=scalec)*100
+			fpdf=t.pdf(x, dof, loc=muf, scale=scalef)*100
+			oddsrc =(fprobth/cprobth)
+
+			fig, ax = plt.subplots(1, 2,figsize=(12,4))
+			#font = {'family' : 'Palatino',
+			#        'size'   : 16}
+			#plt.rc('font', **font)
+			#plt.rc('text', usetex=True)
+			#plt.rc('font', family='serif')
+
+			plt.subplot(1, 2, 1)
+			plt.plot(x, t.sf(x, dof, loc=muc, scale=scalec)*100,'b-', lw=5, alpha=0.6, label='clim')
+			plt.plot(x, t.sf(x, dof, loc=muf, scale=scalef)*100,'r-', lw=5, alpha=0.6, label='fcst')
+			plt.axvline(x=thrs[wk-1], color='k', linestyle='--')
+			plt.plot(thrs[wk-1], fprobth,'ok')
+			plt.plot(thrs[wk-1], cprobth,'ok')
+			plt.text(thrs[wk-1]+0.05, cprobth, str(cprobth)+'%', **style)
+			plt.text(thrs[wk-1]+0.05, fprobth, str(fprobth)+'%', **style)
+			#plt.text(0.1, 10, r'$\frac{P(fcst)}{P(clim)}=$'+str(round(oddsrc,1)), **style)
+			plt.text(min(t.ppf(0.0001, dof, loc=muf, scale=scalef),t.ppf(0.0001, dof, loc=muc, scale=scalec)), -20, 'P(fcst)/P(clim)='+str(round(oddsrc,1)), **style)
+			plt.legend(loc='best', frameon=False)
+			# Add title and axis names
+			plt.title('Probabilities of Exceedance for Week '+str(wk))
+			plt.xlabel('Rainfall')
+			plt.ylabel('Probability (%)')
+			# Limits for the Y axis
+			plt.xlim(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)))
+
+			plt.subplot(1, 2, 2)
+			plt.plot(x, cpdf,'b-', lw=5, alpha=0.6, label='clim')
+			plt.plot(x, fpdf,'r-', lw=5, alpha=0.6, label='fcst')
+			plt.axvline(x=thrs[wk-1], color='k', linestyle='--')
+			#fill area under the curve --not done
+			#section = np.arange(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)), thrs, 1/20.)
+			#plt.fill_between(section,f(section))
+			plt.legend(loc='best', frameon=False)
+			# Add title and axis names
+			plt.title('Probability Density Functions for Week '+str(wk))
+			plt.xlabel('Rainfall')
+			plt.ylabel('')
+			# Limits for the Y axis
+			plt.xlim(min(t.ppf(0.00001, dof, loc=muf, scale=scalef),t.ppf(0.00001, dof, loc=muc, scale=scalec)),max(t.ppf(0.9999, dof, loc=muf, scale=scalef),t.ppf(0.9999, dof, loc=muc, scale=scalec)))
+
+		plt.subplots_adjust(hspace=0)
+		plt.subplots_adjust(bottom=0.15, top=0.9)
+		#cax = plt.axes([0.2, 0.08, 0.6, 0.04])
+		#cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+		#cbar.set_label(label) #, rotation=270)
+		f.close()
 
 def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nlag, nday, training_season, hstep, model, hdate_last, force_download):
 	if not force_download:
@@ -935,6 +1154,9 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 		get_ipython().system("gunzip -f modelfcst_precip_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv.gz")
 		#curl -g -k -b '__dlauth_id='$key'' ''$url'' > modelfcst_precip_fday${fday}.tsv
 
+	#False force_download
+	force_download = False
+
 	#The next two if-blocks are used for noMOS forecasts ##Added by AGM
 	#Short hindcast to correctly compute climatological period of the forecast
 	if not force_download:
@@ -947,7 +1169,7 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			force_download = True
 	if force_download:
 		#dictionary:
-		dic = { 'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+		dic = { 'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(fyr-1)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
 		}
 		# calls curl to download data
 		url=dic[model]
@@ -955,6 +1177,10 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/modelshort_precip_"+mon+"_wk"+str(week)+".tsv.gz")
 		get_ipython().system("gunzip -f noMOS/modelshort_precip_"+mon+"_wk"+str(week)+".tsv.gz")
 	#Short obs period corresponding to the short hindcast period
+
+	#False force_download
+	force_download = False
+
 	if not force_download:
 		try:
 			ff=open("noMOS/obsshort_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
@@ -965,13 +1191,16 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			force_download = True
 	if force_download:
 		#dictionary:
-		dic = {'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/'+obs_source+'/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/'+str(nday)+'/runningAverage/'+str(nday)+'.0/mul/T/2/index/.T/SAMPLE/dup%5BT%5Daverage/sub/-999/setmissing_value/nip/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
+		dic = {'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(fyr-1)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/'+obs_source+'/Y/'+str(sla2)+'/'+str(nla2)+'/RANGE/X/'+str(wlo2)+'/'+str(elo2)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/'+str(nday)+'/runningAverage/'+str(nday)+'.0/mul/T/2/index/.T/SAMPLE/dup%5BT%5Daverage/sub/-999/setmissing_value/nip/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv.gz',
 			   }
 		# calls curl to download data
 		url=dic[model]
 		print("\n Short obs (Rainfall) data URL: \n\n "+url)
 		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/obsshort_precip_"+mon+"_wk"+str(week)+".tsv.gz")
 		get_ipython().system("gunzip -f noMOS/obsshort_precip_"+mon+"_wk"+str(week)+".tsv.gz")
+
+	#False force_download
+	force_download = False
 
 	#The next block is used for noMOS probabilistic forecasts ##Added by AGM
 	#Above normal:
@@ -991,6 +1220,10 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 		url=dic[model]
 		#print("\n Short hindcast URL: \n\n "+url)
 		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/modelfcst_above_PRCP_"+mon+"_wk"+str(week)+".nc")
+
+	#False force_download
+	force_download = False
+
 	#Below normal:
 	if not force_download:
 		try:
@@ -1008,6 +1241,88 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 		url=dic[model]
 		#print("\n Short hindcast URL: \n\n "+url)
 		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/modelfcst_below_PRCP_"+mon+"_wk"+str(week)+".nc")
+
+	#False force_download
+	force_download = False
+
+	#The next block is used for noMOS flexible probabilistic forecasts ##Added by AGM
+	#Ensemble mean:
+	if not force_download:
+		try:
+			ff=Dataset('noMOS/modelfcst_mu_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
+			s = ff.variables['Y'][:]
+		except OSError as err:
+			#print("OS error: {0}".format(err))
+			print("Ensemble mean file doesn't exist --SOLVING: downloading file")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = { 'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.forecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/%5BM%5Daverage/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/%5BM%5Daverage/%5Bhdate%5Daverage/sub/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/data.nc',
+		}
+		# calls curl to download data
+		url=dic[model]
+		print("\n Ensemble mean URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/modelfcst_mu_PRCP_"+mon+"_wk"+str(week)+".nc")
+
+	#False force_download
+	force_download = False
+
+	#Ensemble standard deviation:
+	if not force_download:
+		try:
+			ff=Dataset("noMOS/modelfcst_std_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
+			s = ff.variables['Y'][:]
+		except OSError as err:
+			#print("OS error: {0}".format(err))
+			print("Ensemble standard deviation file doesn't exist --SOLVING: downloading file")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = { 'ECMWF': 'http://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.forecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/%5BM%5Drmsover/c://name//water_density/def/998/%28kg/m3%29/:c/div//mm/unitconvert/data.nc',
+		}
+		# calls curl to download data
+		url=dic[model]
+		#print("\n Ensemble std URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/modelfcst_std_PRCP_"+mon+"_wk"+str(week)+".nc")
+
+	#Obs mean:
+	if not force_download:
+		try:
+			ff=Dataset('noMOS/obs_mu_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
+			s = ff.variables['Y'][:]
+		except OSError as err:
+			#print("OS error: {0}".format(err))
+			print("Obs mean file doesn't exist --SOLVING: downloading file")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = { 'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/'+obs_source+'/%5BX/Y%5D/regridAverage/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/'+str(nday)+'/runningAverage/'+str(nday)+'.0/mul/T/2/index/.T/SAMPLE/dup%5BT%5Daverage/sub/-999/setmissing_value/nip/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/%5BT%5Daverage/data.nc',
+		}
+		# calls curl to download data
+		url=dic[model]
+		#print("\n Obs mean URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/obs_mu_PRCP_"+mon+"_wk"+str(week)+".nc")
+
+	#False force_download
+	force_download = False
+
+	#Obs std:
+	if not force_download:
+		try:
+			ff=Dataset('noMOS/obs_std_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
+			s = ff.variables['Y'][:]
+		except OSError as err:
+			#print("OS error: {0}".format(err))
+			print("Obs std file doesn't exist --SOLVING: downloading file")
+			force_download = True
+	if force_download:
+		#dictionary:
+		dic = { 'ECMWF': 'https://iridl.ldeo.columbia.edu/SOURCES/.ECMWF/.S2S/.ECMF/.reforecast/.perturbed/.sfc_precip/.tp/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/L/('+str(day1)+')/('+str(day2)+')/VALUES/S/(0000%20'+str(fday)+'%20'+mon+'%20'+str(fyr)+')/VALUE/%5BL%5Ddifferences/c%3A//name//water_density/def/998/(kg/m3)/%3Ac/div//mm/unitconvert/-999/setmissing_value/hdate/('+str(fyr-20)+')/('+str(hdate_last)+')/RANGE/dup/%5Bhdate%5Daverage/sub/%5BM%5Daverage/hdate//pointwidth/0/def/-6/shiftGRID/hdate/(days%20since%201960-01-01)/streamgridunitconvert/S/(days%20since%20'+str(fyr)+'-01-01)/streamgridunitconvert/S//units//days/def/L/hdate/add/add/0/RECHUNK/L/removeGRID//name//T/def/2/%7Bexch%5BS/hdate%5D//I/nchunk/NewIntegerGRID/replaceGRIDstream%7Drepeat/use_as_grid/'+obs_source+'/%5BX/Y%5D/regridAverage/Y/'+str(sla1)+'/'+str(nla1)+'/RANGE/X/'+str(wlo1)+'/'+str(elo1)+'/RANGE/T/(days%20since%201960-01-01)/streamgridunitconvert/T/'+str(nday)+'/runningAverage/'+str(nday)+'.0/mul/T/2/index/.T/SAMPLE/-999/setmissing_value/nip/T/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1901/ensotime/12./16/Jan/1920/ensotime/%3Agrid/replaceGRID//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/%5BT%5Drmsover/data.nc',
+		}
+		# calls curl to download data
+		url=dic[model]
+		#print("\n Obs std URL: \n\n "+url)
+		get_ipython().system("curl -g -k -b '__dlauth_id="+key+"' '"+url+"' > noMOS/obs_std_PRCP_"+mon+"_wk"+str(week)+".nc")
 
 def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, elo2, sla2, nla2, obs_source, key, week, wetday_threshold, nlag, model, hdate_last,force_download):
 	if not force_download:
