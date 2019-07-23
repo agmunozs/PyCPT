@@ -954,7 +954,7 @@ def pltprobff(thrsn,ispctl,ntrain,lon,lat,loni,lone,lati,late,fprefix,mpref,trai
 			varf[varf==-999.]=np.nan #identify NaNs
 			varf=varf[i,j]
 			if fprefix=='RFREQ':
-				varf=varf/1000
+				varf=varf/10000
 
 			#Obs file--------
 			#Compute obs mean and variance.
