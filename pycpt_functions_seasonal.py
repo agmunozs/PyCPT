@@ -688,12 +688,12 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
 		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 
-		for i, row in enumerate(ax):
-			for j, cell in enumerate(row):
-				if i == len(ax) - 1:
-					cell.set_xlabel("noise column: {0:d}".format(j + 1))
-				if j == 0:
-					cell.set_ylabel("noise row: {0:d}".format(i + 1))
+		# for i, row in enumerate(ax):
+		# 	for j, cell in enumerate(row):
+		# 		if i == len(ax) - 1:
+		# 			cell.set_xlabel("noise column: {0:d}".format(j + 1))
+		# 		if j == 0:
+		# 			cell.set_ylabel("noise row: {0:d}".format(i + 1))
 
 		ax.set_ylabel(model, rotation=90)
 		cbar.set_label(label) #, rotation=270)
@@ -1353,7 +1353,7 @@ def ensemblefiles(models,work):
 	get_ipython().system("mkdir ../output/NextGen/")
 	get_ipython().system("cd ../output/NextGen/")
 	#Erase old TXT and TGZ files in folder
-	get_ipython().system("rm -Rf "+work+"_NextGen.tgz *.txt")
+	get_ipython().system("rm -Rf *_NextGen.tgz *.txt")
 	for i in range(len(models)):
 		get_ipython().system("cp ../*"+models[i]+"*.txt .")
 
