@@ -1340,6 +1340,7 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 
 		# Exit
 		f.write("0\n")
+		f.write("0\n")
 		f.close()
 		get_ipython().system("cp params "+model+"_"+fprefix+"_"+mpref+"_"+tar+"_"+mon+".cpt")
 
