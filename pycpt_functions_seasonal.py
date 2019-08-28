@@ -1357,12 +1357,12 @@ def ensemblefiles(models,work):
 		models: array with selected models
 	"""
 	get_ipython().system("mkdir ../output/NextGen/")
-	get_ipython().system("cd ../output/NextGen/")
-	#Erase old TXT and TGZ files in folder
-	get_ipython().system("rm -Rf *_NextGen.tgz *.txt")
+	#Go to folder and delate old TXT and TGZ files in folder
+	get_ipython().system("cd ../output/NextGen/; rm -Rf *_NextGen.tgz *.txt")
 	for i in range(len(models)):
 		get_ipython().system("cp ../*"+models[i]+"*.txt .")
 
 	get_ipython().system("tar cvzf "+work+"_NextGen.tgz *.txt")
+	get_ipython().system("pwd")
 	print("Compressed file "+work+"_NextGen.tgz created in output/NextGen/")
 	print("Now send that file to your contact at the IRI")
