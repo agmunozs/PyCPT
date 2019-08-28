@@ -183,26 +183,28 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		for line in lines_that_contain("YDEF", fp):
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_'+monn+'.ctl', "r") as fp:
-		for line in lines_that_contain("XDEF", fp):
-			Wy = int(line.split()[1])
-			XDy= float(line.split()[4])
-	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_'+monn+'.ctl', "r") as fp:
-		for line in lines_that_contain("YDEF", fp):
-			Hy = int(line.split()[1])
-			YDy= float(line.split()[4])
+
+	if mpref=='CCA':
+		with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_'+monn+'.ctl', "r") as fp:
+			for line in lines_that_contain("XDEF", fp):
+				Wy = int(line.split()[1])
+				XDy= float(line.split()[4])
+		with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tari+'_'+monn+'.ctl', "r") as fp:
+			for line in lines_that_contain("YDEF", fp):
+				Hy = int(line.split()[1])
+				YDy= float(line.split()[4])
+		eofy=np.empty([M,Hy,Wy])  #define array for later use
 
 	eofx=np.empty([M,H,W])  #define array for later use
-	eofy=np.empty([M,Hy,Wy])  #define array for later use
 
 	k=0
 	for tar in mons:
 		k=k+1
 		mon=mol[tgts.index(tar)]
 		ax = plt.subplot(nmods+1,nsea, k, projection=ccrs.PlateCarree()) #nmods+obs
-		ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 
-		if mpref=='CCA':
+		if mpref=='CCA':  #skip if there are not predictand EOFs (e.g., PCR)
+			ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
 			f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFY_'+tar+'_'+mon+'.dat','rb')
 			#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
@@ -259,7 +261,10 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			k=k+1
 			mon=mol[tgts.index(tar)]
 			ax = plt.subplot(nmods+1,nsea, k, projection=ccrs.PlateCarree()) #nmods+obs
-			ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
+			if mpref=='PCR':
+				ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())  #EOF domains will look different between CCA and PCR if X and Y domains are different
+			else:
+				ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
 			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 			states_provinces = feature.NaturalEarthFeature(
 				category='cultural',
@@ -853,8 +858,8 @@ def GetHindcasts(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_
 			ff=open(model+"_PRCP_"+tar+"_ini"+mon+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -877,8 +882,8 @@ def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, wetday_thres
 			ff=open(model+"_RFREQ_"+tar+"_ini"+mon+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -901,8 +906,8 @@ def GetHindcasts_UQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, for
 			ff=open(model+"_UQ_"+tar+"_ini"+mon+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -919,8 +924,8 @@ def GetHindcasts_VQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, for
 			ff=open(model+"_VQ_"+tar+"_ini"+mon+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -937,8 +942,8 @@ def GetObs(predictand, wlo2, elo2, sla2, nla2, tar, obs_source, hdate_last, forc
 			ff=open("obs_"+predictand+"_"+tar+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Obs precip file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs precip file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/%28Jan%201982%29/%28Dec%202010%29/RANGE/T/%28'+tar+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
@@ -952,8 +957,8 @@ def GetObs_RFREQ(predictand, wlo2, elo2, sla2, nla2, wetday_threshold, threshold
 			ff=open("obs_"+predictand+"_"+tar+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Obs freq-rainfall file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs freq-rainfall file doesn't exist --SOLVING: downloading file")
 			force_download = True
 	if force_download:
 		#Need to work on it
@@ -974,8 +979,8 @@ def GetForecast(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, force
 			ff=open(model+"fcst_PRCP_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -998,8 +1003,8 @@ def GetForecast_UQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 			ff=open(model+"fcst_UQ_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1016,8 +1021,8 @@ def GetForecast_VQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, model, fo
 			ff=open(model+"fcst_VQ_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1034,8 +1039,8 @@ def GetForecast_RFREQ(monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1, wetday
 			ff=open(model+"fcst_RFREQ_"+tar+"_ini"+monf+str(fyr)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			print("Warning: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING ERROR: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:  #CFSv2 needs to be transformed to RFREQ!
