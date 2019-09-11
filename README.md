@@ -9,7 +9,7 @@ PyCPT_seavX: version X of the seasonal PyCPT notebook
 Ángel G. Muñoz (agmunoz@iri.columbia.edu), Andrew W. Robertson (awr@iri.columbia.edu), Simon J. Mason
 
 ## Contributors
-Thea Turkington (NEA), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
+Jeff Turmelle (IRI), Thea Turkington (NEA), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
 
 ## Acknowledgements
 James Doss-Gollin (Columbia Water Center) developed the original download Python functions.
