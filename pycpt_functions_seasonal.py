@@ -1,8 +1,9 @@
-#This is PyCPT_functions_seasonal.py (version1.3) -- 1 July 2019
+#This is PyCPT_functions_seasonal.py (version1.3) -- 10 Sept 2019
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Log:
 
+#* Started simplifying functions, wrote readGrADSctl function; added functions to create the NextGen files for det skill assessment and plotting --AGM, Sep 2019
 #* Fixed bug with plotting functions when selecting a subset of the seasons, and added start time for forecast file in CPT script -- AGM, July 1st 2019
 #* Added VQ and UQ from CFSv2. User can now select the seasons to visualize in the skill and EOF maps. Fixed bug related to coordinate selection in CHIRPS, TRMM and CPC. -- AGM, June 13th 2019
 #* First Notebook seasonal version -- AGM, May 7th 2019
@@ -55,10 +56,29 @@ class MidpointNormalize(colors.Normalize):
         colors.Normalize.__init__(self, vmin, vmax, clip)
 
     def __call__(self, value, clip=None):
-        # I'm ignoring masked values and all kinds of edge cases to make a
+        # Ignoring masked values and all kinds of edge cases to make a
         # simple example...
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
+
+def readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr):
+	#Read grads binary file size H, W, T
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+id+'_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
+		for line in lines_that_contain("XDEF", fp):
+			W = int(line.split()[1])
+			Wi= float(line.split()[3])
+			XD= float(line.split()[4])
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+id+'_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
+		for line in lines_that_contain("YDEF", fp):
+			H = int(line.split()[1])
+			Hi= float(line.split()[3])
+			YD= float(line.split()[4])
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+id+'_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
+		for line in lines_that_contain("TDEF", fp):
+			T = int(line.split()[1])
+			Ti= int((line.split()[3])[-4:])
+			TD= 1  #not used
+	return (W, Wi, XD, H, Hi, YD, T, Ti, TD)
 
 def PrepFiles(fprefix, predictand, threshold_pctle, wlo1, wlo2,elo1, elo2, sla1, sla2, nla1, nla2, tgti, tgtf, mon, monf, fyr, os, wetday_threshold, tar, model, obs_source, hdate_last, force_download):
 	"""Function to download (or not) the needed files"""
@@ -164,6 +184,9 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 		late: northern latitude
 	"""
 	#mol=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+	if mpref=='None':
+		print('No EOFs are computed if MOS=None is used')
+		return
 
 	mode=mode-1
 	nmods=len(models)
@@ -625,7 +648,7 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
 
-	#plt.figure(figsize=(20,10))
+	#plt.figure(figsize=(15,20))
 	fig, ax = plt.subplots(figsize=(10,8),sharex=True,sharey=True)
 	k=0
 	for model in models:
@@ -918,6 +941,7 @@ def GetHindcasts_UQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, for
 		print("\n Hindcasts URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > "+model+"_UQ_"+tar+"_ini"+mon+".tsv")
 
+
 def GetHindcasts_VQ(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download):
 	if not force_download:
 		try:
@@ -1149,7 +1173,7 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 		# Option: Length of training period
 		f.write("7\n")
 		# Length of training period
-		f.write("27\n")
+		f.write(str(ntrain)+'\n')
 		#	%store 55 >> params
 		# Option: Length of cross-validation window
 		f.write("8\n")
@@ -1323,23 +1347,23 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 			f.write("111\n")
 			# Save cross-validated predictions
 			f.write("201\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_xvPr_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_xvPr_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save deterministic forecasts [mu for Gaussian fcst pdf]
 			f.write("511\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_mu_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save prediction error variance [sigma^2 for Gaussian fcst pdf]
 			f.write("514\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_var_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save z
 			f.write("532\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_z_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_z_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save predictand [to build predictand pdf]
 			f.write("102\n")
-			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_Obs_'+monf+str(fyr)+'\n'
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_Obs_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Stop saving  (not needed in newest version of CPT)
 
@@ -1362,7 +1386,86 @@ def ensemblefiles(models,work):
 	for i in range(len(models)):
 		get_ipython().system("cp ../*"+models[i]+"*.txt .")
 
-	get_ipython().system("tar cvzf "+work+"_NextGen.tgz *.txt")
+	get_ipython().system("tar cvzf NextGen/"+work+"_NextGen.tgz *.txt")
 	get_ipython().system("pwd")
 	print("Compressed file "+work+"_NextGen.tgz created in output/NextGen/")
 	print("Now send that file to your contact at the IRI")
+
+def NGensemble(models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
+	"""A simple function for computing the NextGen ensemble
+
+	PARAMETERS
+	----------
+		models: array with selected models
+	"""
+	nmods=len(models)
+
+	W, Wi, XD, H, Hi, YD, T, Ti, TD = readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr)
+
+	ens  =np.empty([nmods,T,H,W])  #define array for later use
+
+	k=-1
+	for model in models:
+		k=k+1 #model
+		memb0=np.empty([T,H,W])  #define array for later use
+
+		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+id+'_'+tar+'_'+monf+str(fyr)+'.dat','rb')
+		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+		for it in range(T):
+			#Now we read the field
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+			A0=np.fromfile(f,dtype='float32',count=numval)
+			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+			memb0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
+
+		memb0[memb0==-999.]=np.nan #identify NaNs
+
+		ens[k,:,:,:]=memb0
+
+	NG=np.nanmean(ens, axis=0)  #axis 0 is ensemble member
+	writeCPT(NG,'../input/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+
+def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
+	"""Function to write seasonal output in CPT format,
+	using information contained in a GrADS ctl file.
+
+	PARAMETERS
+	----------
+		var: a Dataframe with dimensions T,Y,X
+	"""
+	vari = 'prec'
+	varname = vari
+	units = 'mm'
+	var[np.isnan(var)]=-999. #use CPT missing value
+
+	L=0.5*(float(tgtf)+float(tgti))
+	monthdic = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+	S=monthdic[mon]
+	mi=monthdic[tar.split("-")[0]]
+	mf=monthdic[tar.split("-")[1]]
+
+	#Read grads file to get needed coordinate arrays
+	W, Wi, XD, H, Hi, YD, T, Ti, TD = readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr)
+	Ti=Ti+1 #check --start in 1983 for NMME
+	Tarr = np.arange(Ti, Ti+T)
+	Xarr = np.linspace(Wi, Wi+W*XD,num=W+1)
+	Yarr = np.linspace(Hi+H*YD, Hi,num=H+1)
+
+	#Now write the CPT file
+	f = open(outfile, 'w')
+	f.write("xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n")
+	#f.write("xmlns:cf=http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/\n")   #not really needed
+	f.write("cpt:nfields=1\n")
+	#f.write("cpt:T	" + str(Tarr)+"\n")  #not really needed
+	for it in range(T):
+		f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Ti)+"-"+S+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+		#f.write("\t")
+		np.savetxt(f, Xarr[0:-1], fmt="%.3f",newline='\t') #f.write(str(Xarr)[1:-1])
+		f.write("\n") #next line
+		for iy in range(H):
+			#f.write(str(Yarr[iy]) + "\t" + str(var[it,iy,0:-1])[1:-1]) + "\n")
+			np.savetxt(f,np.r_[Yarr[1:],var[it,iy,0:-1]],fmt="%.3f", newline='\t')
+			f.write("\n") #next line
+	f.close()
