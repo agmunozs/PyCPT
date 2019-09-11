@@ -177,18 +177,21 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 
 	PARAMETERS
 	----------
-		score: the score
+		models: list of models to plot
+		predictand: exactly that
+		mode: EOF being visualized
+		M: total number of EOFs computed by CPT (max defined in PyCPT is 10)
 		loni: western longitude
 		lone: eastern longitude
 		lati: southern latitude
 		late: northern latitude
+		fprefix:
 	"""
 	#mol=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 	if mpref=='None':
 		print('No EOFs are computed if MOS=None is used')
 		return
 
-	mode=mode-1
 	nmods=len(models)
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
@@ -196,7 +199,6 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 	model=models[0]
 	monn=mol[0]
 	nsea=len(mons)
-	M=3
 	#Read  grid
 	with open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_EOFX_'+tari+'_'+monn+'.ctl', "r") as fp:
 		for line in lines_that_contain("XDEF", fp):
@@ -234,7 +236,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			for mo in range(M):
 				#Now we read the field
 				recl=struct.unpack('i',f.read(4))[0]
-				numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+				numval=int(recl/np.dtype('float32').itemsize) #this if for each time/EOF stamp
 				A0=np.fromfile(f,dtype='float32',count=numval)
 				endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
 				eofy[mo,:,:]= np.transpose(A0.reshape((Wy, Hy), order='F'))
@@ -326,7 +328,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			for mo in range(M):
 				#Now we read the field
 				recl=struct.unpack('i',f.read(4))[0]
-				numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+				numval=int(recl/np.dtype('float32').itemsize) #this if for each time/EOF stamp
 				A0=np.fromfile(f,dtype='float32',count=numval)
 				endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
 				eofx[mo,:,:]= np.transpose(A0.reshape((W, H), order='F'))
@@ -1448,7 +1450,11 @@ def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,mo
 
 	#Read grads file to get needed coordinate arrays
 	W, Wi, XD, H, Hi, YD, T, Ti, TD = readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr)
-	Ti=Ti+1 #check --start in 1983 for NMME
+	if tar=='Dec-Feb':
+		Ti=Ti
+	else:
+		Ti=Ti+1 #check --start in 1983 for NMME
+
 	Tarr = np.arange(Ti, Ti+T)
 	Xarr = np.linspace(Wi, Wi+W*XD,num=W+1)
 	Yarr = np.linspace(Hi+H*YD, Hi,num=H+1)
@@ -1466,6 +1472,6 @@ def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,mo
 		f.write("\n") #next line
 		for iy in range(H):
 			#f.write(str(Yarr[iy]) + "\t" + str(var[it,iy,0:-1])[1:-1]) + "\n")
-			np.savetxt(f,np.r_[Yarr[1:],var[it,iy,0:-1]],fmt="%.3f", newline='\t')
+			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:-1]],fmt="%.3f", newline='\t')
 			f.write("\n") #next line
 	f.close()
