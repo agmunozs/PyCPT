@@ -209,7 +209,7 @@
  (Approximate data limits in brackets)
  (Southern latitudes and western longitudes negatives)
   
- Northernmost latitude (  31):   Southernmost latitude (  28):   Westernmost longitude (-120):   Easternmost longitude ( -45):    
+ Northernmost latitude (  31):   Southernmost latitude (  -1):   Westernmost longitude (-120):   Easternmost longitude ( -45):    
   
  _______________________________________________________________________________
   
@@ -223,7 +223,7 @@
  Start at                                   Sep 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -245,7 +245,7 @@
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -336,7 +336,7 @@
  Start at                                   Sep 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -358,7 +358,7 @@
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -454,7 +454,7 @@
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -476,7 +476,7 @@
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -572,7 +572,7 @@
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -594,7 +594,7 @@
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -835,7 +835,7 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -857,7 +857,7 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -1252,7 +1252,7 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -1274,7 +1274,7 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -1363,7 +1363,7 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Cross-validating model ...
  Training period: SON 1983 to SON 2009
   
- Goodness Index:              0.004
+ Goodness Index:              0.114
  Constructing model using full training period (SON 1983 to SON 2009) ...
  Identifying categories ...
   
@@ -1381,8 +1381,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
                                             Y File
   
@@ -1403,8 +1403,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
  Training Data
  Length of training period (years)                  27
@@ -1525,8 +1525,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
                                             Y File
   
@@ -1547,8 +1547,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
  Training Data
  Length of training period (years)                  27
@@ -1669,8 +1669,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
                                             Y File
   
@@ -1691,8 +1691,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
  Training Data
  Length of training period (years)                  27
@@ -1813,8 +1813,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
                                             Y File
   
@@ -1835,8 +1835,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
  Training Data
  Length of training period (years)                  27
@@ -1957,8 +1957,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
                                             Y File
   
@@ -1979,8 +1979,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
  Training Data
  Length of training period (years)                  27
@@ -2101,8 +2101,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   SON 1983
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
                                             Y File
   
@@ -2123,8 +2123,8 @@ Length of training period (minimum is 4; maximum is 27):  >   __________________
  Start at                                   Sep 2009
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
- Number used variables:                     4638
+ Number of gridpoints                       36900
+ Number used variables:                     8923
   
  Training Data
  Length of training period (years)                  27

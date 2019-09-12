@@ -209,7 +209,7 @@
  (Approximate data limits in brackets)
  (Southern latitudes and western longitudes negatives)
   
- Northernmost latitude (  31):   Southernmost latitude (  28):   Westernmost longitude (-120):   Easternmost longitude ( -45):    
+ Northernmost latitude (  31):   Southernmost latitude (  -1):   Westernmost longitude (-120):   Easternmost longitude ( -45):    
   
  _______________________________________________________________________________
   
@@ -223,7 +223,7 @@
  Start at                                   Nov 1982
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -245,7 +245,7 @@
  Start at                                   Nov 2008
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -336,7 +336,7 @@
  Start at                                   Nov 1982
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -358,7 +358,7 @@
  Start at                                   Nov 2008
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -454,7 +454,7 @@
  Start at                                   NDJ 1983/84
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -476,7 +476,7 @@
  Start at                                   Nov 2008
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
@@ -572,7 +572,7 @@
  Start at                                   NDJ 1983/84
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
                                             Y File
@@ -594,7 +594,7 @@
  Start at                                   Nov 2008
  Number of fields                           1
  Number of lags                             1
- Number of gridpoints                       37200
+ Number of gridpoints                       36900
  Number used variables:                     0
   
  Training Data
