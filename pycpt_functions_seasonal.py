@@ -1450,10 +1450,12 @@ def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,mo
 
 	#Read grads file to get needed coordinate arrays
 	W, Wi, XD, H, Hi, YD, T, Ti, TD = readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr)
-	if tar=='Dec-Feb':
+	if tar=='Dec-Feb' or tar=='Nov-Jan':  #double check years are sync
 		Ti=Ti
+		xyear=True  #flag a cross-year season
 	else:
-		Ti=Ti+1 #check --start in 1983 for NMME
+		Ti=Ti+1
+		xyear=False
 
 	Tarr = np.arange(Ti, Ti+T)
 	Xarr = np.linspace(Wi, Wi+W*XD,num=W+1)
@@ -1466,12 +1468,15 @@ def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,mo
 	f.write("cpt:nfields=1\n")
 	#f.write("cpt:T	" + str(Tarr)+"\n")  #not really needed
 	for it in range(T):
-		f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Ti)+"-"+S+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+		if xyear==True:
+			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Ti)+"-"+S+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+		else:
+			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Ti)+"-"+S+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
 		#f.write("\t")
 		np.savetxt(f, Xarr[0:-1], fmt="%.3f",newline='\t') #f.write(str(Xarr)[1:-1])
 		f.write("\n") #next line
-		for iy in range(1,H):
+		for iy in range(H):
 			#f.write(str(Yarr[iy]) + "\t" + str(var[it,iy,0:-1])[1:-1]) + "\n")
-			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:-1]],fmt="%.3f", newline='\t')
+			np.savetxt(f,np.r_[Yarr[1:],var[it,iy,0:-1]],fmt="%.3f", newline='\t')
 			f.write("\n") #next line
 	f.close()

@@ -1,0 +1,2184 @@
+  
+  
+             C L I M A T E   P R E D I C T A B I L I T Y   T O O L
+                                 Version 16.01
+  
+                   Evaluating seasonal climate predictability
+                         Designed for MOS applications
+  
+  
+  Copyright 2002-2019 International Research Institute for Climate and Society
+  
+  
+ III RRRR  III                                                                 
+  I  R   R  I                                                                  
+  I  R   R  I                                                                  
+  I  RRRR   I                                                                  
+  I  R   R  I   I N T E R N A T I O N A L   R E S E A R C H   I N S T I T U T E
+ III R   R III  F O R         C L I M A T E         A N D         S O C I E T Y
+  
+  
+ File
+       141.  New
+       142.  Open
+       144.  Save As
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       801.  Merge
+       802.  Update
+       811.  Download
+ Options
+       511.  Language
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+       613.  Multiple Linear Regression          (MLR)
+       614.  GCM Validation                      (GCM)
+       621.  Probabilistic Forecast Verification (PFV)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 
+ First data                                 N/A
+ Last data                                  N/A
+ Start at                                   
+ Number of fields                           0
+ Number of lags                             0
+ Number of variables                        0
+ Number used variables:                     0
+  
+                                            Y File
+  
+ Input Data                                 
+ First data                                 N/A
+ Last data                                  N/A
+ Start at                                   
+ Number of fields                           0
+ Number of lags                             0
+ Number of variables                        0
+ Number used variables:                     0
+  
+                                            Forecast File
+  
+ Input Data                                 
+ First data                                 N/A
+ Last data                                  N/A
+ Start at                                   
+ Number of fields                           0
+ Number of lags                             0
+ Number of variables                        0
+ Number used variables:                     0
+  
+ Training Data
+ Length of training period (dates)                   0
+ Length of climatological period (years)             0
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         7.  Length of training period
+ File
+       141.  New
+       142.  Open
+       144.  Save As
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       801.  Merge
+       802.  Update
+       811.  Download
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn on)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+       613.  Multiple Linear Regression          (MLR)
+       621.  Probabilistic Forecast Verification (PFV)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+  
+                                 Error Handling
+  
+ Select option for how to handle user input errors:
+ 
+ 1. Retry                                                           
+ 2. Ignore                                                          
+ 3. Stop                                                            
+ >   _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         7.  Length of training period
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       801.  Merge
+       802.  Update
+       811.  Download
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn on)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+       613.  Multiple Linear Regression          (MLR)
+       621.  Probabilistic Forecast Verification (PFV)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >   X Input File:   
+  
+                                Data Domain (X)
+  
+  
+ Data Domain (X):
+ Domain limits:
+ (Approximate data limits in brackets)
+ (Southern latitudes and western longitudes negatives)
+  
+ Northernmost latitude (  31):   Southernmost latitude (  28):   Westernmost longitude (-120):   Easternmost longitude ( -45):    
+  
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Y File
+  
+ Input Data                                 
+ First data                                 N/A
+ Last data                                  N/A
+ Start at                                   
+ Number of fields                           0
+ Number of lags                             0
+ Number of variables                        0
+ Number used variables:                     0
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+ Training Data
+ Length of training period (dates)                  27
+ Length of climatological period (years)             0
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+       220.  Start at
+            221.  Predictors (X)
+            223.  New Predictors (Z)
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn on)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >   Y Input File:   
+  
+                                Data Domain (Y)
+  
+  
+ Data Domain (Y):
+ Domain limits:
+ (Approximate data limits in brackets)
+ (Southern latitudes and western longitudes negatives)
+  
+ Northernmost latitude (  30):   Southernmost latitude (  -1):   Westernmost longitude (-120):   Easternmost longitude ( -45):    
+  
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)             0
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+  
+                                  Start at (X)
+  
+ First data:                 DJF 1983/84                     
+ Last data:                  DJF 2009/10                     
+ Start at
+ year:    
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)             0
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+  
+                                  Start at (Y)
+  
+ First data:                 DJF 1983/84                     
+ Last data:                  DJF 2009/10                     
+ Start at
+ year:    
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)             0
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+  
+                                 Goodness Index
+  
+ Select score for calculating goodness index:
+ 
+ 1. Pearson's correlation   
+ 2. Spearman's correlation  
+ 3. Kendall's tau           
+ >   _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+Length of training period (minimum is 4; maximum is 27):  >   _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+  
+                            Cross-validation Options
+  
+ Length of cross-validation window (must be odd):    
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)             0
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >   _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn on)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >   _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn off)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+  
+                                 Missing Values
+  
+  
+ Predictors (X):
+ Missing value flag:   Maximum % of missing values:   Maximum % of missing gridpoints:   Number of near-neighbours:    
+ Missing value Replacement:
+ Select method:
+ 
+ 1. Long-term means     
+ 2. Long-term medians   
+ 3. Random numbers      
+ 4. Best near-neighbours
+ >    
+  
+ Predictands (Y):
+ Missing value flag:   Maximum % of missing values:   Maximum % of missing gridpoints:   Number of near-neighbours:    
+ Missing value Replacement:
+ Select method:
+ 
+ 1. Long-term means     
+ 2. Long-term medians   
+ 3. Random numbers      
+ 4. Best near-neighbours
+ >    
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       132.  Output data precision
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn off)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >   Output format:
+ 
+ 1. unformatted
+ 2. formatted  
+ 3. GrADS      
+ >   _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn off)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >   Goodness Index Output file:   
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     0
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)             0
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         7.  Length of training period
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            112.  Save Goodness Index
+       131.  Output file format
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       310.  Calculate
+            311.  Cross-validated
+            312.  Retroactive
+ Options
+       511.  Language
+       527.  GCM Options
+       531.  Goodness Index
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       540.  Data
+            542.  Zero-Bound (turn off)
+            543.  Sort Ensemble Members (turn off)
+            546.  Ensemble Average (turn on)
+            545.  Synchronous Predictors (turn off)
+            544.  Missing Values
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ View
+       611.  Canonical Correlation Analysis      (CCA)
+       612.  Principal Components Regression     (PCR)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+ Reading data ...
+ Reading ../input/obs_PRCP_Dec-Feb.tsv ...
+ Reading ../input/NextGen_PRCP_Dec-Feb_iniNov.tsv ...
+  
+ Checking for missing values ...
+  
+ Calculating climatologies and thresholds ...
+ Climatological Period: DJF 1983/84 to DJF 2009/10
+  
+ Beginning analysis ...
+ Cross-validating model ...
+ Training period: DJF 1983/84 to DJF 2009/10
+  
+ Goodness Index:              0.020
+ Constructing model using full training period (DJF 1983/84 to DJF 2009/10) ...
+ Identifying categories ...
+  
+ Done!
+  
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     9040
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)            27
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            113.  View Goodness Index
+            111.  Output Results
+       131.  Output file format
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       321.  Reset
+ Tools
+       410.  Validation
+            410.  Cross-validated
+                 411.  Performance Measures
+                 412.  Bootstrap
+                 413.  Skill Maps
+                 414.  ROC Diagram
+                 415.  Contingency Tables
+       460.  Climatological Maps
+            461.  Thresholds
+            462.  Averages
+            463.  Correlations
+       450.  Forecasts
+            451.  Series
+            452.  Ensembles
+            453.  Exceedance Probabilities
+            450.  Maps
+                 454.  Values
+                 455.  Probabilities
+                 456.  Odds
+ Options
+       511.  Language
+       527.  GCM Options
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+ Scores:
+ 
+  1. Pearson's Correlation          
+  2. Spearman's Correlation         
+  3. 2AFC Score                     
+  4. Hit Score                      
+  5. Hit Skill Score                
+  6. LEPS Score                     
+  7. Gerrity Score                  
+  8. 2AFC (forecast categories)     
+  9. 2AFC (continuous forecasts)    
+ 10. ROC Area (Below-Normal)        
+ 11. ROC Area (Above-Normal)        
+ >    
+ Calculating Pearson's Correlation ...
+ Done!
+ Skill Scores Output file:   
+ Saving: ../output/NextGen_PRCPPRCP_CCA_Pearson_Dec-Feb_Nov.dat
+  
+ Done!
+  
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     9040
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)            27
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            113.  View Goodness Index
+            111.  Output Results
+       131.  Output file format
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       321.  Reset
+ Tools
+       410.  Validation
+            410.  Cross-validated
+                 411.  Performance Measures
+                 412.  Bootstrap
+                 413.  Skill Maps
+                 414.  ROC Diagram
+                 415.  Contingency Tables
+       460.  Climatological Maps
+            461.  Thresholds
+            462.  Averages
+            463.  Correlations
+       450.  Forecasts
+            451.  Series
+            452.  Ensembles
+            453.  Exceedance Probabilities
+            450.  Maps
+                 454.  Values
+                 455.  Probabilities
+                 456.  Odds
+ Options
+       511.  Language
+       527.  GCM Options
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+ Scores:
+ 
+  1. Pearson's Correlation          
+  2. Spearman's Correlation         
+  3. 2AFC Score                     
+  4. Hit Score                      
+  5. Hit Skill Score                
+  6. LEPS Score                     
+  7. Gerrity Score                  
+  8. 2AFC (forecast categories)     
+  9. 2AFC (continuous forecasts)    
+ 10. ROC Area (Below-Normal)        
+ 11. ROC Area (Above-Normal)        
+ >    
+ Calculating Spearman's Correlation ...
+ Done!
+ Skill Scores Output file:   
+ Saving: ../output/NextGen_PRCPPRCP_CCA_Spearman_Dec-Feb_Nov.dat
+  
+ Done!
+  
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     9040
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)            27
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            113.  View Goodness Index
+            111.  Output Results
+       131.  Output file format
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       321.  Reset
+ Tools
+       410.  Validation
+            410.  Cross-validated
+                 411.  Performance Measures
+                 412.  Bootstrap
+                 413.  Skill Maps
+                 414.  ROC Diagram
+                 415.  Contingency Tables
+       460.  Climatological Maps
+            461.  Thresholds
+            462.  Averages
+            463.  Correlations
+       450.  Forecasts
+            451.  Series
+            452.  Ensembles
+            453.  Exceedance Probabilities
+            450.  Maps
+                 454.  Values
+                 455.  Probabilities
+                 456.  Odds
+ Options
+       511.  Language
+       527.  GCM Options
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+ Scores:
+ 
+  1. Pearson's Correlation          
+  2. Spearman's Correlation         
+  3. 2AFC Score                     
+  4. Hit Score                      
+  5. Hit Skill Score                
+  6. LEPS Score                     
+  7. Gerrity Score                  
+  8. 2AFC (forecast categories)     
+  9. 2AFC (continuous forecasts)    
+ 10. ROC Area (Below-Normal)        
+ 11. ROC Area (Above-Normal)        
+ >    
+ Calculating 2AFC Score ...
+ Done!
+ Skill Scores Output file:   
+ Saving: ../output/NextGen_PRCPPRCP_CCA_2AFC_Dec-Feb_Nov.dat
+  
+ Done!
+  
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     9040
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)            27
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            113.  View Goodness Index
+            111.  Output Results
+       131.  Output file format
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       321.  Reset
+ Tools
+       410.  Validation
+            410.  Cross-validated
+                 411.  Performance Measures
+                 412.  Bootstrap
+                 413.  Skill Maps
+                 414.  ROC Diagram
+                 415.  Contingency Tables
+       460.  Climatological Maps
+            461.  Thresholds
+            462.  Averages
+            463.  Correlations
+       450.  Forecasts
+            451.  Series
+            452.  Ensembles
+            453.  Exceedance Probabilities
+            450.  Maps
+                 454.  Values
+                 455.  Probabilities
+                 456.  Odds
+ Options
+       511.  Language
+       527.  GCM Options
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+ Scores:
+ 
+  1. Pearson's Correlation          
+  2. Spearman's Correlation         
+  3. 2AFC Score                     
+  4. Hit Score                      
+  5. Hit Skill Score                
+  6. LEPS Score                     
+  7. Gerrity Score                  
+  8. 2AFC (forecast categories)     
+  9. 2AFC (continuous forecasts)    
+ 10. ROC Area (Below-Normal)        
+ 11. ROC Area (Above-Normal)        
+ >    
+ Calculating ROC Area (Below-Normal) ...
+ Done!
+ Skill Scores Output file:   
+ Saving: ../output/NextGen_PRCPPRCP_CCA_RocBelow_Dec-Feb_Nov.dat
+  
+ Done!
+  
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     9040
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)            27
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            113.  View Goodness Index
+            111.  Output Results
+       131.  Output file format
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       321.  Reset
+ Tools
+       410.  Validation
+            410.  Cross-validated
+                 411.  Performance Measures
+                 412.  Bootstrap
+                 413.  Skill Maps
+                 414.  ROC Diagram
+                 415.  Contingency Tables
+       460.  Climatological Maps
+            461.  Thresholds
+            462.  Averages
+            463.  Correlations
+       450.  Forecasts
+            451.  Series
+            452.  Ensembles
+            453.  Exceedance Probabilities
+            450.  Maps
+                 454.  Values
+                 455.  Probabilities
+                 456.  Odds
+ Options
+       511.  Language
+       527.  GCM Options
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >    
+ Scores:
+ 
+  1. Pearson's Correlation          
+  2. Spearman's Correlation         
+  3. 2AFC Score                     
+  4. Hit Score                      
+  5. Hit Skill Score                
+  6. LEPS Score                     
+  7. Gerrity Score                  
+  8. 2AFC (forecast categories)     
+  9. 2AFC (continuous forecasts)    
+ 10. ROC Area (Below-Normal)        
+ 11. ROC Area (Above-Normal)        
+ >    
+ Calculating ROC Area (Above-Normal) ...
+ Done!
+ Skill Scores Output file:   
+ Saving: ../output/NextGen_PRCPPRCP_CCA_RocAbove_Dec-Feb_Nov.dat
+  
+ Done!
+  
+ _______________________________________________________________________________
+  
+ Climate Predictability Tool 16   - GCM Validation
+  
+                                            X File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   DJF 1983/84
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+                                            Y File
+  
+ Input Data                                 obs_PRCP_Dec-Feb.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 1983
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     9040
+  
+                                            Forecast File
+  
+ Input Data                                 NextGen_PRCP_Dec-Feb_iniNov.tsv
+ First data                                 DJF 1983/84
+ Last data                                  DJF 2009/10
+ Start at                                   Dec 2009
+ Number of fields                           1
+ Number of lags                             1
+ Number of gridpoints                       37200
+ Number used variables:                     4638
+  
+ Training Data
+ Length of training period (years)                  27
+ Length of climatological period (years)            27
+ Number of Forecasts                                 1
+ _______________________________________________________________________________
+  
+ Select option:
+ 
+         1.  Open X input file
+         2.  Open Y input file
+         3.  Open forecast file
+         4.  X training period settings
+         5.  Y training period settings
+         6.  Forecast period settings
+         9.  Number of Forecasts
+ File
+       141.  New
+       142.  Open
+       143.  Save
+       144.  Save As
+       121.  Close X
+       122.  Close Y
+       123.  Close Forecast
+       110.  Output Results
+            113.  View Goodness Index
+            111.  Output Results
+       131.  Output file format
+       133.  Exclude CPT output tags
+ Data
+       811.  Download
+ Edit
+       210.  Data Domain
+            211.  Predictors (X)
+            212.  Predictands (Y)
+       220.  Start at
+            221.  Predictors (X)
+            222.  Predictands (Y)
+            223.  New Predictors (Z)
+ Actions
+       321.  Reset
+ Tools
+       410.  Validation
+            410.  Cross-validated
+                 411.  Performance Measures
+                 412.  Bootstrap
+                 413.  Skill Maps
+                 414.  ROC Diagram
+                 415.  Contingency Tables
+       460.  Climatological Maps
+            461.  Thresholds
+            462.  Averages
+            463.  Correlations
+       450.  Forecasts
+            451.  Series
+            452.  Ensembles
+            453.  Exceedance Probabilities
+            450.  Maps
+                 454.  Values
+                 455.  Probabilities
+                 456.  Odds
+ Options
+       511.  Language
+       527.  GCM Options
+       532.  Climatological Period
+       533.  Tailoring
+       534.  Cross-validation Options
+       551.  Resampling Settings
+       552.  Forecast Settings
+       553.  Verification Settings
+       554.  Transformation Settings
+       555.  Time Settings
+       561.  Skill map p-values (turn on)
+       571.  Error settings
+       572.  Print Menus (turn off)
+ Help
+       711.  About
+  
+  
+   0.  Exit
+  
+ >  
