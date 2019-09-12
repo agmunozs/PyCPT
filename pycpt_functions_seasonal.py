@@ -1470,7 +1470,7 @@ def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,mo
 		#f.write("\t")
 		np.savetxt(f, Xarr[0:-1], fmt="%.3f",newline='\t') #f.write(str(Xarr)[1:-1])
 		f.write("\n") #next line
-		for iy in range(H):
+		for iy in range(1,H):
 			#f.write(str(Yarr[iy]) + "\t" + str(var[it,iy,0:-1])[1:-1]) + "\n")
 			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:-1]],fmt="%.3f", newline='\t')
 			f.write("\n") #next line
