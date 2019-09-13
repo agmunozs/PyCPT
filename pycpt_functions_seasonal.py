@@ -1,9 +1,8 @@
-#This is PyCPT_functions_seasonal.py (version1.4) -- 13 Sept 2019
+#This is PyCPT_functions_seasonal.py (version1.3) -- 10 Sept 2019
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Log:
 
-#* This version now reads station data from the DL, and can run CPT in an automated way with it, but still doesn't have all plot functionality. --AGM 13 Sep 2019
 #* Started simplifying functions, wrote readGrADSctl function; added functions to create the NextGen files for det skill assessment and plotting --AGM, Sep 2019
 #* Fixed bug with plotting functions when selecting a subset of the seasons, and added start time for forecast file in CPT script -- AGM, July 1st 2019
 #* Added VQ and UQ from CFSv2. User can now select the seasons to visualize in the skill and EOF maps. Fixed bug related to coordinate selection in CHIRPS, TRMM and CPC. -- AGM, June 13th 2019
@@ -17,6 +16,7 @@
 #	+ Simplify download functions: just one function, with the right arguments and dictionaries.
 #	+ Check Hindcasts and Forecast_RFREQ
 import os
+import sys
 import warnings
 import struct
 import xarray as xr
@@ -32,6 +32,7 @@ import matplotlib.colors as colors
 import matplotlib.ticker as ticker
 from matplotlib.colors import LinearSegmentedColormap
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import fileinput
 
 
 warnings.filterwarnings("ignore")
@@ -61,6 +62,12 @@ class MidpointNormalize(colors.Normalize):
         # simple example...
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
+
+def replaceAll(file,searchExp,replaceExp):
+    for line in fileinput.input(file, inplace=1):
+        if searchExp in line:
+            line = line.replace(searchExp,replaceExp)
+        sys.stdout.write(line)
 
 def readGrADSctl(models,fprefix,predictand,mpref,id,tar,monf,fyr):
 	#Read grads binary file size H, W, T
@@ -974,15 +981,15 @@ def GetObs(predictand, wlo2, elo2, sla2, nla2, tar, obs_source, hdate_last, forc
 			force_download = True
 	if force_download:
 		if obs_source=='home/.xchourio/.ACToday/.CHL/.prcp':
-			url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/%28Jan%201981%29/%28Dec%202010%29/RANGE/T/%28'+tar+'%29/seasonalAverage/-999/setmissing_value/%5B%5D%5BT%5Dcptv10.tsv'
+			url='http://iridl.ldeo.columbia.edu/'+obs_source+'/T/%28Jan%201981%29/%28Dec%202010%29/RANGE/T/%28'+tar+'%29/seasonalAverage/-999/setmissing_value/%5B%5D%5BT%5Dcptv10.tsv'
 		else:
 			url='https://iridl.ldeo.columbia.edu/'+obs_source+'/T/%28Jan%201982%29/%28Dec%202010%29/RANGE/T/%28'+tar+'%29/seasonalAverage/Y/%28'+str(sla2)+'%29/%28'+str(nla2)+'%29/RANGEEDGES/X/%28'+str(wlo2)+'%29/%28'+str(elo2)+'%29/RANGEEDGES/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv'
 
 		print("\n Obs (Rainfall) data URL: \n\n "+url)
 		get_ipython().system("curl -k "+url+" > obs_"+predictand+"_"+tar+".tsv")
 		if obs_source=='home/.xchourio/.ACToday/.CHL/.prcp':   #weirdly enough, Ingrid sends the file with nfields=0. This is my solution for now. AGM
-			for line in fileinput.FileInput("obs_"+predictand+"_"+tar+".tsv", inplace=1):
-				line=line.replace("cpt:nfields=0\n","cpt:nfields=1\n")
+			replaceAll("obs_"+predictand+"_"+tar+".tsv","cpt:nfields=0","cpt:nfields=1")
+
 
 def GetObs_RFREQ(predictand, wlo2, elo2, sla2, nla2, wetday_threshold, threshold_pctle, tar, obs_source, hdate_last, force_download,station):
 	if not force_download:
@@ -1362,6 +1369,10 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 			# Save deterministic forecasts [mu for Gaussian fcst pdf]
 			f.write("511\n")
 			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'\n'
+			f.write(file)
+			# Forecast probabilities
+			f.write("501\n")
+			file='../output/'+model+'_'+fprefix+'_'+mpref+'FCST_P_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Save prediction error variance [sigma^2 for Gaussian fcst pdf]
 			f.write("514\n")
