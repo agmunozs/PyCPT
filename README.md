@@ -9,16 +9,15 @@ PyCPT_seavX: version X of the seasonal PyCPT notebook
 Ángel G. Muñoz (agmunoz@iri.columbia.edu), Andrew W. Robertson (awr@iri.columbia.edu), Simon J. Mason
 
 ## Contributors
-Jeff Turmelle (IRI), Thea Turkington (NEA), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
+Thea Turkington (NEA), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
 
 ## Acknowledgements
 James Doss-Gollin (Columbia Water Center) developed the original download Python functions.
 
 Part of the effort to develop PyCPT is funded by the Columbia World Project "Adapting Agriculture to Climate Today, for Tomorrow" (ACToday), and NOAA MAPP's projects NA18OAR4310275 (Muñoz) and NA16OAR4310145 (Robertson).
 
-## Instructions:
-1. Download and compile CPT (https://iri.columbia.edu/cpt). Use version > 16.0 for seasonal, and version => 15.7.10 for sub-seasonal. Take note of the PATH to CPT.
-2. Clone or download the function and notebook files in the same (working) folder, open the notebook, modify the namelist to include, for example, your PATH to CPT and working directory. Check dates (especially if interested in realtime cases).
+## Installation Instructions
+See the [wiki](https://github.com/agmunozs/PyCPT/wiki) for detailed instructions
 
-3. [ONLY needed for the s2s version] Create the file .IRIDLAUTH in the same folder. Its content must be the Data Library S2S key obtained via help@iri.columbia.edu
-4. Run the notebook.
+## Disclaimer
+PyCPT is provided on an ‘as is’ basis and the user assumes responsibility for its use. The authors have relinquished control of the information and no longer has responsibility to protect the integrity, confidentiality, or availability of the information. Any claims against the International Research Institute for Climate and Society (IRI) stemming from the use of any GitHub-related project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the IRI, the Earth Institute or Columbia University. The IRI seal and logo, or the seal and logo of any Columbia University institute, center, laboratory or group, shall not be used in any manner to imply endorsement of any commercial product or activity.
