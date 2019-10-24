@@ -372,13 +372,15 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 		late: northern latitude
 	"""
 	nmods=len(models)
-	nsea=len(mons)
+	nsea=len(mons)  #number of seasons and columns
 
 	#plt.figure(figsize=(20,10))
 	fig, ax = plt.subplots(figsize=(20,15),sharex=True,sharey=True)
 	k=0
+	nrow=-1
 	for model in models:
-		print(model)
+		nrow=nrow+1
+		#print(model)
 		for tar in mons:
 			k=k+1
 			mon=mo[tgts.index(tar)]
@@ -396,6 +398,8 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 
 			ax = plt.subplot(nmods,nsea, k, projection=ccrs.PlateCarree())
 			ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
+			if k == (nrow*nsea)+1:
+				ax.text(-0.2,0.5,model,rotation=90,fontsize=8.8,verticalalignment='center', transform=ax.transAxes)
 
 			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 			states_provinces = feature.NaturalEarthFeature(
@@ -426,6 +430,7 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 
 			if k<=nsea:
 				ax.set_title(tar)
+				#ax.ylabel(model, fontsize=11)
 			#for i, axi in enumerate(axes):  # need to enumerate to slice the data
 			#	axi.set_ylabel(model, fontsize=12)
 
