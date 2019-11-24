@@ -1102,8 +1102,8 @@ def GetHindcasts(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, week, nl
 			ff=open("model_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1125,8 +1125,8 @@ def GetHindcasts_Temp(wlo1, elo1, sla1, nla1, day1, day2, fyr, mon, os, key, wee
 			ff=open("model_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1145,8 +1145,8 @@ def GetHindcasts_RFREQ(wlo1, elo1, sla1, nla1, day1, day2, nday, fyr, mon, os, k
 			ff=open("model_RFREQ_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Hindcasts file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Hindcasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1166,8 +1166,8 @@ def GetObs(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag, 
 			ff=open("obs_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Obs precip file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs precip file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1188,8 +1188,8 @@ def GetObsTn(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, nlag
 			ff=open("obs_tmin_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Obs temp min file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs temp file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1208,8 +1208,8 @@ def GetObs_RFREQ(day1, day2, mon, fyr, wlo2, elo2, sla2, nla2, nday, key, week, 
 			ff=open("obs_RFREQ_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Obs freq-rainfall file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs freq-rainfall file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionaries:
@@ -1235,8 +1235,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=open("modelfcst_precip_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecasts file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1261,8 +1261,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=open("noMOS/modelshort_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Short hindcast file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Short hindcast file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1283,8 +1283,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=open("noMOS/obsshort_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Short obs precip file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Short obs precip file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1306,8 +1306,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=Dataset('noMOS/modelfcst_above_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Above normal probability forecast file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Above normal probability forecast file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1327,8 +1327,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=Dataset("noMOS/modelfcst_below_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Below normal probability forecast file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Below normal probability forecast file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1349,8 +1349,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=Dataset('noMOS/modelfcst_mu_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Ensemble mean file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Ensemble mean file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1370,8 +1370,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=Dataset("noMOS/modelfcst_std_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Ensemble standard deviation file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Ensemble standard deviation file file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1388,8 +1388,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=Dataset('noMOS/obs_mu_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Obs mean file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs mean file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1409,8 +1409,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=Dataset('noMOS/obs_std_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Obs std file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs std file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1429,8 +1429,8 @@ def GetForecast(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, wlo2, 
 			ff=open("noMOS/obsshort_RFREQ_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Short obs precip file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Short obs precip file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	#dictionaries:
 	if threshold_pctle:
@@ -1478,8 +1478,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=open("modelfcst_precip_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecast file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1504,8 +1504,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=open("noMOS/modelshort_precip_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Short hindcast file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Short hindcast file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1526,8 +1526,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=open("noMOS/obsshort_RFREQ_"+mon+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Short obs precip file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Short obs precip file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	#dictionaries:
 	if threshold_pctle:
@@ -1555,8 +1555,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=Dataset('noMOS/modelfcst_above_RFREQ_'+mon+'_wk'+str(week)+'.nc', 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Above normal probability forecast file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Above normal probability forecast file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1576,8 +1576,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=Dataset("noMOS/modelfcst_below_RFREQ_"+mon+"_wk"+str(week)+".nc", 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Below normal probability forecast file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Below normal probability forecast file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1598,8 +1598,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=Dataset('noMOS/modelfcst_mu_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Ensemble mean file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Ensemble mean file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1619,8 +1619,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=Dataset("noMOS/modelfcst_std_PRCP_"+mon+"_wk"+str(week)+".nc", 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Ensemble standard deviation file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Ensemble standard deviation file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1637,8 +1637,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=Dataset('noMOS/obs_mu_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Obs mean file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs mean file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1658,8 +1658,8 @@ def GetForecast_RFREQ(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, 
 			ff=Dataset('noMOS/obs_std_PRCP_'+mon+'_wk'+str(week)+'.nc', 'r')
 			s = ff.variables['Y'][:]
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Obs std file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Obs std file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
@@ -1676,8 +1676,8 @@ def GetForecast_Temp(day1, day2, fday, mon, fyr, nday, wlo1, elo1, sla1, nla1, w
 			ff=open("modelfcst_temp_"+mon+"_fday"+str(fday)+"_wk"+str(week)+".tsv", 'r')
 			s = ff.readline()
 		except OSError as err:
-			#print("OS error: {0}".format(err))
-			print("Forecasts file doesn't exist --SOLVING: downloading file")
+			print("\033[1mWarning:\033[0;0m {0}".format(err))
+			print("Forecast file doesn't exist --\033[1mSOLVING: downloading file\033[0;0m")
 			force_download = True
 	if force_download:
 		#dictionary:
