@@ -1,5 +1,5 @@
 # PyCPT - seasonal and sub-seasonal versions
-Python interface for the CPT command line version, for seasonal and sub-seasonal skill assessment and forecast experiments
+Python interface and enhancement for the CPT command line version, for seasonal and sub-seasonal skill assessment and forecast experiments
 
 PyCPT_s2svX: version X of the sub-seasonal PyCPT notebook
 
@@ -12,7 +12,7 @@ PyCPT_seavX: version X of the seasonal PyCPT notebook
 Cuihua Li (OCP, Columbia U.), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
 
 ## How to cite
-[![DOI](https://zenodo.org/badge/142679292.svg)](https://zenodo.org/badge/latestdoi/142679292)
+Muñoz, Á.G., Robertson, A.W., Turkington, T., Mason, S.J., and collaborators, 2019: PyCPT. [![DOI](https://zenodo.org/badge/142679292.svg)](https://zenodo.org/badge/latestdoi/142679292)
 
 ## Acknowledgements
 James Doss-Gollin (Columbia Water Center) developed the original download Python functions.
