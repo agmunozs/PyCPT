@@ -19,7 +19,7 @@ We recommend this citation for PyCPT:
 Since PyCPT is interfacing with CPT, you should also cite CPT itself. For example, the citation for version 16.2.3 is:
 > Mason, S.J., Tippet, M., Song, L., Muñoz, Á.G., 2019: "Climate Predictability Tool version 16.2.3". DOI: https://doi.org/10.7916/d8-19cq-rn26
 
-Please find [here](https://academiccommons.columbia.edu/search?utf8=%E2%9C%93&sort=Published+Latest&search_field=all_fields&q=%22Climate+Predictability+Tool%22) the exact citation to the CPT version desire to cite, especially the DOI (click on the "Download latest version" link on the right-side menu).
+Please find [here](https://academiccommons.columbia.edu/search?utf8=%E2%9C%93&sort=Published+Latest&search_field=all_fields&q=%22Climate+Predictability+Tool%22) the exact citation to the CPT version desire to cite; note that the DOI varies in each version.
 
 ## Issues
 Please use the templates provided in the "Issues" tab to request improvements to PyCPT. Requests are priritized and will be addressed as soon as possible.
