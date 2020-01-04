@@ -17,6 +17,9 @@ Muñoz, Á.G., Robertson, A.W., Turkington, T., Mason, S.J., and contributors, 2
 
 Since PyCPT is interfacing CPT, you should also cite CPT itself. Please find the way to cite the latest CPT version [here](https://iri.columbia.edu/our-expertise/climate/tools/cpt/) (click on the "Download latest version" link on the right-side menu).
 
+## Issues
+Please use the templates provided in the "Issues" tab to request improvements to PyCPT. Requests are priritized and will be addressed as soon as possible.
+
 ## Acknowledgements
 James Doss-Gollin (Columbia Water Center) developed the original download Python functions.
 
