@@ -14,9 +14,12 @@ Cuihua Li (OCP, Columbia U.), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi C
 ## How to cite
 We recommend this citation for PyCPT:
 
-> Muñoz, Á.G., Robertson, A.W., Turkington, T., Mason, S.J., and contributors, 2019: PyCPT: a Python interface and enhancement for IRI's Climate Predictability Tool. [![DOI](https://zenodo.org/badge/142679292.svg)](https://zenodo.org/badge/latestdoi/142679292)
+> Muñoz, Á.G., Robertson, A.W., Turkington, T., Mason, S.J., and contributors, 2019: "PyCPT: a Python interface and enhancement for IRI's Climate Predictability Tool". [![DOI](https://zenodo.org/badge/142679292.svg)](https://zenodo.org/badge/latestdoi/142679292)
 
-Since PyCPT is interfacing CPT, you should also cite CPT itself. Please find the way to cite the latest CPT version [here](https://iri.columbia.edu/our-expertise/climate/tools/cpt/) (click on the "Download latest version" link on the right-side menu).
+Since PyCPT is interfacing with CPT, you should also cite CPT itself. For example, the citation for version 16.2.3 is:
+> Mason, S.J., Tippet, M., Song, L., Muñoz, Á.G., 2019: "Climate Predictability Tool version 16.2.3". DOI: https://doi.org/10.7916/d8-19cq-rn26
+
+Please find [here](https://academiccommons.columbia.edu/search?utf8=%E2%9C%93&sort=Published+Latest&search_field=all_fields&q=%22Climate+Predictability+Tool%22) the exact citation to the CPT version desire to cite, especially the DOI (click on the "Download latest version" link on the right-side menu).
 
 ## Issues
 Please use the templates provided in the "Issues" tab to request improvements to PyCPT. Requests are priritized and will be addressed as soon as possible.
