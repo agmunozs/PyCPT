@@ -1165,7 +1165,7 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 			if monf=="Oct" or monf=="Nov" or monf=="Dec":
 				f.write(str(fyr+1)+"\n")
 			else:
-			f.write(str(fyr)+"\n")
+				f.write(str(fyr)+"\n")
 
 		# Opens Y input file
 		f.write("2\n")
