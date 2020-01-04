@@ -1,15 +1,18 @@
 # PyCPT - seasonal and sub-seasonal versions
-Python interface for the CPT command line version, for seasonal and sub-seasonal skill assessment and forecast experiments
+Python interface and enhancement for IRI's CPT command line version, for seasonal and sub-seasonal skill assessment and forecast experiments
 
 PyCPT_s2svX: version X of the sub-seasonal PyCPT notebook
 
 PyCPT_seavX: version X of the seasonal PyCPT notebook
 
 ## Authors
-Ángel G. Muñoz (agmunoz@iri.columbia.edu), Andrew W. Robertson (awr@iri.columbia.edu), Simon J. Mason
+Ángel G. Muñoz (agmunoz@iri.columbia.edu), Andrew W. Robertson (awr@iri.columbia.edu), Thea Turkington (NEA), Simon J. Mason
 
 ## Contributors
-Thea Turkington (NEA), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
+Cuihua Li (OCP, Columbia U.), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
+
+## How to cite
+Muñoz, Á.G., Robertson, A.W., Turkington, T., Mason, S.J., and contributors, 2019: PyCPT: a Python interface and enhancement for IRI's Climate Predictability Tool. [![DOI](https://zenodo.org/badge/142679292.svg)](https://zenodo.org/badge/latestdoi/142679292)
 
 ## Acknowledgements
 James Doss-Gollin (Columbia Water Center) developed the original download Python functions.
