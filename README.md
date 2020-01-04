@@ -26,6 +26,7 @@ Part of the effort to develop PyCPT is funded by the Columbia World Project "Ada
 See the [wiki](https://github.com/agmunozs/PyCPT/wiki) for detailed instructions
 
 It might be useful to use the provided iri-dev.yml conda environment file. If so, just follow the usual approach:
+
 `conda env create -f iri-dev.yml`
 
 ## Disclaimer
