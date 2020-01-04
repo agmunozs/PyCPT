@@ -1,5 +1,5 @@
 # PyCPT - seasonal and sub-seasonal versions
-Python interface and enhancement for IRI's CPT command line version, for seasonal and sub-seasonal skill assessment and forecast experiments
+Python interface and enhancement for the [International Research Institute for Climate and Society](https://iri.columbia.edu)'s CPT command line version, for seasonal and sub-seasonal skill assessment and forecast experiments
 
 PyCPT_s2svX: version X of the sub-seasonal PyCPT notebook
 
