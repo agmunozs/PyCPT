@@ -12,7 +12,9 @@ PyCPT_seavX: version X of the seasonal PyCPT notebook
 Cuihua Li (OCP, Columbia U.), Jeff Turmelle (IRI), Xandre Chourio (IRI), Rémi Cousin (IRI), Nachiketa Acharya (IRI), Asher Siebert (IRI)
 
 ## How to cite
+We recommend this citation for PyCPT:
 Muñoz, Á.G., Robertson, A.W., Turkington, T., Mason, S.J., and contributors, 2019: PyCPT: a Python interface and enhancement for IRI's Climate Predictability Tool. [![DOI](https://zenodo.org/badge/142679292.svg)](https://zenodo.org/badge/latestdoi/142679292)
+Since PyCPT is interfacing CPT, you should also cite CPT itself. Please find the way to cite the latest CPT version [here](https://iri.columbia.edu/our-expertise/climate/tools/cpt/) (click on the "Download latest version" link on the right-side menu).
 
 ## Acknowledgements
 James Doss-Gollin (Columbia Water Center) developed the original download Python functions.
