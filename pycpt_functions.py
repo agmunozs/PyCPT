@@ -1,4 +1,4 @@
-#This is PyCPT_functions.py (version1.5) -- 17 Nov 2019
+#This is PyCPT_functions.py (version1.6) -- 4 Jan 2020
 #Authors: ÁG Muñoz (agmunoz@iri.columbia.edu), AW Robertson (awr@iri.columbia.edu), T Turkington (NEA), SJ Mason
 #Notes: be sure it matches version of PyCPT
 #Log: see version.log in GitHub
@@ -669,11 +669,11 @@ def pltmapff(thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,training_seaso
 		dof=ntrain
 
 		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
-		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+		with open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.ctl', "r") as fp:
 			for line in lines_that_contain("XDEF", fp):
 				W = int(line.split()[1])
 				XD= float(line.split()[4])
-		with open('../output/'+fprefix+'_'+mpref+'_2AFC_'+training_season+'_wk1.ctl', "r") as fp:
+		with open('../output/'+fprefix+'_'+mpref+'FCST_mu_'+training_season+'_'+str(mon)+str(fday)+'_wk'+str(wk)+'.ctl', "r") as fp:
 			for line in lines_that_contain("YDEF", fp):
 				H = int(line.split()[1])
 				YD= float(line.split()[4])

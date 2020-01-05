@@ -1,4 +1,4 @@
-#This is PyCPT_functions_seasonal.py (version1.5) -- 20 Nov 2019
+#This is PyCPT_functions_seasonal.py (version1.6) -- 4 Jan 2019
 #Authors: AG Muñoz (agmunoz@iri.columbia.edu) and Andrew W. Robertson (awr@iri.columbia.edu)
 #Notes: be sure it matches version of PyCPT
 #Log:
@@ -286,11 +286,12 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 			ax.set_title(tar)
 		#if ax.is_first_col():
 		ax.set_ylabel(model, rotation=90)
+		if k==1:
+			ax.text(-0.2,0.5,'Obs',rotation=90,fontsize=9.2,verticalalignment='center', transform=ax.transAxes)
 
-
-	nrow=-1
+	nrow=0
 	for model in models:
-		nrow=nrow+1
+		nrow=nrow+1 #first model is in row=2 and nrow=1
 		for tar in mons:
 			k=k+1
 			mon=mol[tgts.index(tar)]
@@ -299,6 +300,7 @@ def plteofs(models,predictand,mode,M,loni,lone,lati,late,fprefix,mpref,tgts,mol,
 				ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())  #EOF domains will look different between CCA and PCR if X and Y domains are different
 			else:
 				ax.set_extent([loni,loni+Wy*XDy,lati,lati+Hy*YDy], ccrs.PlateCarree())
+
 			#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
 			states_provinces = feature.NaturalEarthFeature(
 				category='cultural',
@@ -644,19 +646,29 @@ def pltmapProb(loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, nwk
 	cbar.set_label('Probability (%)') #, rotation=270)
 	f.close()
 
-def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,monf,fyr,mons,tgts):
+def pltmapff(models,predictand,thrs,ispctl,ntrain,loni,lone,lati,late,fprefix,mpref,monf,fyr,mons,tgts):
 	"""A simple function for ploting probabilistic forecasts in flexible format (for a given threshold)
 
 	PARAMETERS
 	----------
+		models: models to plot (array)
+		predictand: predictand used
 		thrs: the threshold, in the units of the predictand
+		ispctl: logical to identify if it's a percentile threshold
+		ntrain: training period (number of years)
 		loni: western longitude
 		lone: eastern longitude
 		lati: southern latitude
 		late: northern latitude
+		fprefix: file prefix (predictor)
+		mpref: MOS method
+		monf: forecast month of initialization
+		fyr: forecast year of initialization
+		mons:
+		tgts: target season(s)
 	"""
 	#Implement: read degrees of freedom from CPT file
-	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; since ntrain is huge after concat, dof~=ntrain for now
+	#Formally, for CCA, dof=ntrain - #CCAmodes -1 ; dof=ntrain for now
 	dof=ntrain
 	nmods=len(models)
 	tar=tgts[mons.index(monf)]
@@ -669,12 +681,21 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 		for line in lines_that_contain("YDEF", fp):
 			H = int(line.split()[1])
 			YD= float(line.split()[4])
+	with open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_Obs_'+tar+'_'+monf+str(fyr)+'.ctl', "r") as fp:
+		for line in lines_that_contain("TDEF", fp):
+			T = int(line.split()[1])
+			TD= 1  #not used
 
 	#plt.figure(figsize=(15,20))
+	if ispctl:
+		thrso=thrs
+		thrst = thrs * 100
+
 	fig, ax = plt.subplots(figsize=(10,nmods*3),sharex=True,sharey=True)
 	k=0
 	for model in models:
 		k=k+1
+		#Read mean
 		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
 		f=open('../output/'+model+'_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.dat','rb')
 		recl=struct.unpack('i',f.read(4))[0]
@@ -693,8 +714,32 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 		vari = np.transpose(A.reshape((W, H), order='F'))
 		vari[vari<0.]=np.nan #only positive values
 
+		#Obs file--------
+		#Compute obs mean and variance.
+		#
+		muc0=np.empty([T,H,W])  #define array for later use
+		#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+		f=open('../output/'+models[0]+'_'+fprefix+predictand+'_'+mpref+'FCST_Obs_'+tar+'_'+monf+str(fyr)+'.dat','rb')
+		#cycle for all time steps  (same approach to read GrADS files as before, but now read T times)
+		for it in range(T):
+			#Now we read the field
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize) #this if for each time stamp
+			A0=np.fromfile(f,dtype='float32',count=numval)
+			endrec=struct.unpack('i',f.read(4))[0]  #needed as Fortran sequential repeats the header at the end of the record!!!
+			muc0[it,:,:]= np.transpose(A0.reshape((W, H), order='F'))
+
+		muc0[muc0==-999.]=np.nan #identify NaNs
+		muc=np.nanmean(muc0, axis=0)  #axis 0 is T
+		#Compute obs variance
+		varc=np.nanvar(muc0, axis=0)  #axis 0 is T
+
 		#Compute scale parameter for the t-Student distribution
-		scalef=np.sqrt((dof-2)/dof*vari)
+		scalef=np.sqrt(dof*vari) 		 #due to transformation from Gamma
+		scalec=np.sqrt((dof-2)/dof*varc)
+
+		if ispctl:
+			thrs=t.ppf(thrso, dof, loc=muc, scale=scalec)  #If using percentiles, compute value using climo
 
 		fprob = exceedprob(thrs,dof,muf,scalef)
 
@@ -713,7 +758,10 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 		ax.add_feature(feature.COASTLINE)
 
 		if k==1:
-			ax.set_title('Probability (%) of Exceeding '+str(thrs)+" mm/day")
+			if ispctl:
+				ax.set_title('Probability (%) of exceeding the '+str(int(thrst))+'th percentile')
+			else:
+				ax.set_title('Probability (%) of exceeding '+str(thrs)+" mm/month")
 
 		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
 			linewidth=2, color='gray', alpha=0.5, linestyle='--')
@@ -729,6 +777,8 @@ def pltmapff(models,predictand,thrs,ntrain,loni,lone,lati,late,fprefix,mpref,mon
 			cmap=plt.cm.bwr,
 			transform=ccrs.PlateCarree())
 		label = 'Probability (%) of Exceedance'
+		ax.text(-0.2,0.5,model,rotation=90,fontsize=9.2,verticalalignment='center', transform=ax.transAxes)
+
 
 		#plt.autoscale(enable=True)
 
