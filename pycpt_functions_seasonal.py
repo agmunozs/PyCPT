@@ -58,10 +58,22 @@ class MidpointNormalize(colors.Normalize):
         colors.Normalize.__init__(self, vmin, vmax, clip)
 
     def __call__(self, value, clip=None):
-        # Ignoring masked values and all kinds of edge cases to make a
+        # I'm ignoring masked values and all kinds of edge cases to make a
         # simple example...
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
+
+def discrete_cmap(N, base_cmap=None):
+	"""Create an N-bin discrete colormap from the specified input map"""
+	# Note that if base_cmap is a string or None, you can simply do
+	#    return plt.cm.get_cmap(base_cmap, N)
+	# The following works for string, None, or a colormap instance:
+	base = plt.cm.get_cmap(base_cmap)
+	color_list = base(np.linspace(0, 1, N))
+	cmap_name = base.name + str(N)
+	#base.set_bad(color='white')
+	#return base.from_list(cmap_name, color_list, N)
+	return LinearSegmentedColormap.from_list(cmap_name, color_list, N) #perceptually uniform colormaps
 
 def replaceAll(file,searchExp,replaceExp):
     for line in fileinput.input(file, inplace=1):
@@ -444,7 +456,8 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 			#	axi.set_ylabel(model, fontsize=12)
 
 			if score == 'CCAFCST_V' or score == 'PCRFCST_V':
-				f=open('../output/'+model+'_'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat','rb')
+				#f=open('../output/'+model+'_'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat','rb')
+				f=open('../output/'+model+'_'+fprefix+predictand+'_'+score+'_'+tar+'_'+mon+str(fday)+'.dat','rb')
 				recl=struct.unpack('i',f.read(4))[0]
 				numval=int(recl/np.dtype('float32').itemsize)
 				#Now we read the field
@@ -476,9 +489,11 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 				#Now we read the field
 				A=np.fromfile(f,dtype='float32',count=numval)
 				var = np.transpose(A.reshape((W, H), order='F'))
+				var[var==-999.]=np.nan
+				vmi=-max(np.nanmax(var),np.abs(np.nanmin(var)))
+				vma=-vmi
 				#define colorbars, depending on each score	--This can be easily written as a function
 				if score == '2AFC':
-					var[var==-999.]=np.nan #only positive values
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=0,vmax=100,
 					cmap=plt.cm.bwr,
@@ -486,7 +501,6 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 					label = '2AFC (%)'
 
 				if score == 'RocAbove' or score=='RocBelow':
-					var[var==-999.]=np.nan #only positive values
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=0,vmax=1,
 					cmap=plt.cm.bwr,
@@ -494,12 +508,32 @@ def pltmap(models,predictand,score,loni,lone,lati,late,fprefix,mpref,tgts, mo, m
 					label = 'ROC area'
 
 				if score == 'Spearman' or score=='Pearson':
-					var[var==-999.]=np.nan #only sensible values
 					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
 					vmin=-1,vmax=1,
 					cmap=plt.cm.bwr,
 					transform=ccrs.PlateCarree())
 					label = 'Correlation'
+
+				if score == 'RPSS':
+					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+					vmin=vmi,vmax=vma,
+					cmap=discrete_cmap(20, 'bwr'),
+					transform=ccrs.PlateCarree())
+					label = 'RPSS (all categories)'
+
+				if score=='GROC':
+					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+					vmin=0,vmax=100,
+					cmap=discrete_cmap(11, 'bwr'),
+					transform=ccrs.PlateCarree())
+					label = 'GROC (probabilistic)'
+
+				if score=='Ignorance':
+					CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+					vmin=0,vmax=vma,
+					cmap=discrete_cmap(20, 'jet'),
+					transform=ccrs.PlateCarree())
+					label = 'Ignorance (all categories)'
 
 				plt.subplots_adjust(hspace=0)
 				#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
@@ -1319,7 +1353,7 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 		f.write(file)
 
 		# Build cross-validated model
-		f.write("311\n")
+		f.write("311\n")   #In the seasonal case, training periods are usually too short to do retroactive analysis
 
 		# save EOFs
 		if MOS=='CCA' or MOS=='PCR':
@@ -1455,12 +1489,113 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'FCST_Obs_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# cross-validated skill maps
+			if MOS=="PCR" or MOS=="CCA":
+				f.write("0\n")
 			f.write("413\n")
 			# save 2AFC score  #special request of Chile
 			f.write("3\n")
 			file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_2AFC_'+tar+'_'+monf+str(fyr)+'\n'
 			f.write(file)
 			# Stop saving  (not needed in newest version of CPT)
+
+		###########PFV --Added by AGM in version 1.5
+		#Compute and write retrospective forecasts for prob skill assessment.
+		#Re-define forecas file if PCR or CCA
+		if MOS=="PCR" or MOS=="CCA":
+			f.write("3\n")
+			file='../input/'+model+'_'+fprefix+'_'+tar+'_ini'+mon+'.tsv\n'  #here a conditional should choose if rainfall freq is being used
+			f.write(file)
+		#Forecast period settings
+		f.write("6\n")
+		# First year to forecast. Save ALL forecasts (for "retroactive" we should only assess second half)
+		if monf=="Oct" or monf=="Nov" or monf=="Dec":
+			f.write("1983\n")
+		else:
+			f.write("1982\n")
+		#Number of forecasts option
+		f.write("9\n")
+		# Number of reforecasts to produce
+		if monf=="Oct" or monf=="Nov" or monf=="Dec":
+			f.write("26\n")
+		else:
+			f.write("27\n")
+		# Change to ASCII format
+		f.write("131\n")
+		# ASCII format
+		f.write("2\n")
+		# Probabilistic (3 categories) maps
+		f.write("455\n")
+		# Output results
+		f.write("111\n")
+		# Forecast probabilities --Note change in name for reforecasts:
+		f.write("501\n")
+		file='../output/'+model+'_RFCST_'+fprefix+'_'+tar+'_ini'+monf+str(fyr)+'\n'
+		f.write(file)
+		#502 # Forecast odds
+		#Exit submenu
+		f.write("0\n")
+
+		# Close X file so we can access the PFV option
+		f.write("121\n")
+		f.write("Y\n")  #Yes to cleaning current results:# WARNING:
+		#Select Probabilistic Forecast Verification (PFV)
+		f.write("621\n")
+		# Opens X input file
+		f.write("1\n")
+		file='../output/'+model+'_RFCST_'+fprefix+'_'+tar+'_ini'+monf+str(fyr)+'.txt\n'
+		f.write(file)
+		# Nothernmost latitude
+		f.write(str(nla2)+'\n')
+		# Southernmost latitude
+		f.write(str(sla2)+'\n')
+		# Westernmost longitude
+		f.write(str(wlo2)+'\n')
+		# Easternmost longitude
+		f.write(str(elo2)+'\n')
+
+		f.write("5\n")
+		# First year of the PFV
+		# for "retroactive" only second half of the entire period should be used --this value is for ECMWF only)
+		#f.write("1901\n")
+		if monf=="Oct" or monf=="Nov" or monf=="Dec":
+			f.write("1983\n")
+		else:
+			f.write("1982\n")
+
+		#Verify
+		f.write("313\n")
+
+		#Reliability diagram
+		f.write("431\n")
+		f.write("Y\n") #yes, save results to a file
+		file='../output/'+model+'_RFCST_reliabdiag_'+fprefix+'_'+tar+'_ini'+monf+str(fyr)+'.tsv\n'
+		f.write(file)
+
+		# select output format -- GrADS, so we can plot it in Python
+		f.write("131\n")
+		# GrADS format
+		f.write("3\n")
+
+		# Probabilistic skill maps
+		f.write("437\n")
+		# save Ignorance (all cats)
+		f.write("101\n")
+		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_Ignorance_'+tar+'_'+mon+'\n'
+		f.write(file)
+
+		# Probabilistic skill maps
+		f.write("437\n")
+		# save Ranked Probability Skill Score (all cats)
+		f.write("122\n")
+		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_RPSS_'+tar+'_'+mon+'\n'
+		f.write(file)
+
+		# Probabilistic skill maps
+		f.write("437\n")
+		# save Ranked Probability Skill Score (all cats)
+		f.write("131\n")
+		file='../output/'+model+'_'+fprefix+predictand+'_'+mpref+'_GROC_'+tar+'_'+mon+'\n'
+		f.write(file)
 
 		# Exit
 		f.write("0\n")
@@ -1523,10 +1658,13 @@ def NGensemble(models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 	#writeCPT(NG,'../output/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
 	if id=='FCST_xvPr':
 		writeCPT(NG,'../input/NextGen_'+fprefix+'_'+tar+'_ini'+mon+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		print('Files successfully produced')
 	if id=='FCST_mu':
-		return NG
+		writeCPT(NG,'../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_mu_'+tar+'_'+monf+str(fyr)+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		print('Files successfully produced')
 	if id=='FCST_var':
-		return NG
+		writeCPT(NG,'../output/NextGen_'+fprefix+predictand+'_'+mpref+'FCST_var_'+tar+'_'+monf+str(fyr)+'.tsv',models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr)
+		print('Files successfully produced')
 
 def writeCPT(var,outfile,models,fprefix,predictand,mpref,id,tar,mon,tgti,tgtf,monf,fyr):
 	"""Function to write seasonal output in CPT format,

@@ -57,7 +57,9 @@ def discrete_cmap(N, base_cmap=None):
 	base = plt.cm.get_cmap(base_cmap)
 	color_list = base(np.linspace(0, 1, N))
 	cmap_name = base.name + str(N)
-	return base.from_list(cmap_name, color_list, N)
+	#base.set_bad(color='white')
+	#return base.from_list(cmap_name, color_list, N)
+	return LinearSegmentedColormap.from_list(cmap_name, color_list, N) #perceptually uniform colormaps
 
 def ncdump(nc_fid, verb=True):
     '''
@@ -353,6 +355,152 @@ def pltmap(score,loni,lone,lati,late,fprefix,mpref,training_season, mon, fday, n
 		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
 		cbar.set_label(label) #, rotation=270)
 		f.close()
+
+def pltmapdiff(score,loni,lone,lati,late,fprefix,mpref1,mpref2,training_season, mon, fday, nwk):
+	"""A simple function for ploting differences of the skill scores
+
+	PARAMETERS
+	----------
+		score: the score
+		loni: western longitude
+		lone: eastern longitude
+		lati: southern latitude
+		late: northern latitude
+		title: title
+	"""
+
+	plt.figure(figsize=(20,5))
+
+	for L in range(nwk):
+		wk=L+1
+		#Read grads binary file size H, W  --it assumes all files have the same size, and that 2AFC exists
+		with open('../output/'+fprefix+'_'+mpref1+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+			for line in lines_that_contain("XDEF", fp):
+				W = int(line.split()[1])
+				XD= float(line.split()[4])
+		with open('../output/'+fprefix+'_'+mpref1+'_2AFC_'+training_season+'_wk'+str(wk)+'.ctl', "r") as fp:
+			for line in lines_that_contain("YDEF", fp):
+				H = int(line.split()[1])
+				YD= float(line.split()[4])
+
+#		ax = plt.subplot(nwk/2, 2, wk, projection=ccrs.PlateCarree())
+		ax = plt.subplot(1,nwk, wk, projection=ccrs.PlateCarree())
+		ax.set_extent([loni,loni+W*XD,lati,lati+H*YD], ccrs.PlateCarree())
+
+		#Create a feature for States/Admin 1 regions at 1:10m from Natural Earth
+		states_provinces = feature.NaturalEarthFeature(
+			category='cultural',
+#			name='admin_1_states_provinces_shp',
+			name='admin_0_countries',
+			scale='10m',
+			facecolor='none')
+
+		ax.add_feature(feature.LAND)
+		ax.add_feature(feature.COASTLINE)
+		ax.set_title('Week '+str(wk))
+		pl=ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+				  linewidth=2, color='gray', alpha=0., linestyle='--')
+		pl.xlabels_top = False
+		pl.ylabels_left = True
+		pl.ylabels_right = False
+		pl.xformatter = LONGITUDE_FORMATTER
+		pl.yformatter = LATITUDE_FORMATTER
+		ax.add_feature(states_provinces, edgecolor='gray')
+		ax.set_ybound(lower=lati, upper=late)
+
+		if score == 'CCAFCST_V' or score == 'PCRFCST_V' or score == 'noMOSFCST_V':
+			f=open('../output/'+fprefix+'_'+score+'_'+training_season+'_'+mon+str(fday)+'_wk'+str(wk)+'.dat','rb')
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			#Now we read the field
+			A=np.fromfile(f,dtype='float32',count=numval)
+			var = np.transpose(A.reshape((W, H), order='F'))
+			var[var==-999.]=np.nan #only sensible values
+			current_cmap = plt.cm.BrBG
+			current_cmap.set_bad('white',1.0)
+			current_cmap.set_under('white', 1.0)
+			if fprefix == 'RFREQ':
+				label ='Freq Rainy Days (days)'
+				var=var/100 #weird 100 factor coming from CPT for frq rainy days!! ??
+			elif fprefix == 'PRCP':
+				label = 'Rainfall anomaly (mm/week)'
+			CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				#vmin=-max(np.max(var),np.abs(np.min(var))), #vmax=np.max(var),
+				norm=MidpointNormalize(midpoint=0.),
+				cmap=current_cmap,
+				transform=ccrs.PlateCarree())
+			ax.set_title("Deterministic forecast for Week "+str(wk))
+			f.close()
+			#current_cmap = plt.cm.get_cmap()
+			#current_cmap.set_bad(color='white')
+			#current_cmap.set_under('white', 1.0)
+		else:
+			#Since CPT writes grads files in sequential format, we need to excise the 4 bytes between records (recl)
+			f=open('../output/'+fprefix+'_'+mpref1+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat','rb')
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			#Now we read the field
+			A=np.fromfile(f,dtype='float32',count=numval)
+			var1 = np.transpose(A.reshape((W, H), order='F'))
+			var1[var1==-999]=np.nan
+			f=open('../output/'+fprefix+'_'+mpref2+'_'+score+'_'+training_season+'_wk'+str(wk)+'.dat','rb')
+			recl=struct.unpack('i',f.read(4))[0]
+			numval=int(recl/np.dtype('float32').itemsize)
+			#Now we read the field
+			A=np.fromfile(f,dtype='float32',count=numval)
+			var2 = np.transpose(A.reshape((W, H), order='F'))
+			var2[var2==-999]=np.nan
+			var=var2-var1
+			vmi=-max(np.nanmax(var),np.abs(np.nanmin(var)))
+			vma=-vmi
+			#define colorbars, depending on each score	--This can be easily written as a function
+			if score == '2AFC':
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=vmi, vmax=vma,
+				cmap=discrete_cmap(11, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = '2AFC (%)'
+			if score == 'RocAbove' or score=='RocBelow':
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=vmi, vmax=vma,
+				cmap=discrete_cmap(11, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'ROC area'
+			if score == 'Spearman' or score=='Pearson':
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=vmi, vmax=vma,
+				cmap=discrete_cmap(11, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'Correlation'
+			if score == 'RPSS':
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=vmi, vmax=vma,
+				cmap=discrete_cmap(20, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'RPSS (all categories)'
+			if score=='GROC':
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=vmi, vmax=vma,
+				cmap=discrete_cmap(11, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'GROC (probabilistic)'
+			if score=='Ignorance':
+				CS=plt.pcolormesh(np.linspace(loni, loni+W*XD,num=W), np.linspace(lati+H*YD, lati, num=H), var,
+				vmin=vmi, vmax=vma,
+				cmap=discrete_cmap(20, 'bwr'),
+				transform=ccrs.PlateCarree())
+				label = 'Ignorance (all categories)'
+
+		plt.subplots_adjust(hspace=0)
+		#plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
+		#cbar_ax = plt.add_axes([0.85, 0.15, 0.05, 0.7])
+		#plt.tight_layout()
+		plt.subplots_adjust(bottom=0.15, top=0.9)
+		cax = plt.axes([0.2, 0.08, 0.6, 0.04])
+		cbar = plt.colorbar(CS,cax=cax, orientation='horizontal')
+		cbar.set_label(label) #, rotation=270)
+		f.close()
+
 
 def skilltab(score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,training_season,mon,fday,nwk):
 	"""Creates a table with min, max and average values of skills computed over a certain domain
