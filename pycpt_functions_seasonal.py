@@ -1246,7 +1246,7 @@ def CPTscript(model,predictand, mon,monf,fyr,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,
 			f.write(file)
 			#Start forecast:
 			f.write("223\n")
-			if monf=="Oct" or monf=="Nov" or monf=="Dec":
+			if monf=="Dec":
 				f.write(str(fyr+1)+"\n")
 			else:
 				f.write(str(fyr)+"\n")

@@ -2031,7 +2031,7 @@ def CPTscript(mon,fday,wk,nla1,sla1,wlo1,elo1,nla2,sla2,wlo2,elo2,fprefix,mpref,
 		#Update interval:
 		f.write("80\n")   #--80 for speeding up tests, change to 20 later (~same results so far with 20 or 80)
 
-		if MOS=='None': #for some weird reason for None we need to run it twice for it to work
+		if MOS=='None': #for some weird reason for None we need to run it twice for it to work (at least in v16.2*)
 			# Retroactive for s2s, due to the large sample size
 			f.write("312\n")
 			#Length of initial training period:
