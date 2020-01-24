@@ -995,252 +995,252 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 	#cbar.set_label(label) #, rotation=270)
 	f.close()
 
-def readNetCDF_predictand(infile,outfile, predictand, wlo2, elo2, sla2, nla2, tar):
-	"""Function to read the user's predictand NetCDF file and write to CPT format.
-
-	PARAMETERS
-        ----------
-		predictand: a DataArray with dimensions T,Y,X
-	"""
-
-	ds=xr.open_dataset(infile,decode_times=False)
-	da=list(ds.coords)
-
-	for i in range(len(da)):
-		if da[i]=='X' or da[i]=='lon' or da[i]=='longitude':
-			ds = ds.rename({da[i]:'X'})
-		if da[i]=='Y' or da[i]=='lat' or da[i]=='latitude':
-			ds = ds.rename({da[i]:'Y'})
-		if da[i]=='T' or da[i]=='time':
-			deltastyr=int(ds[da[i]][0]/12)
-			ds = ds.rename({da[i]:'time'})
-			nmon=ds.time.shape[0]
-			nyr=int(nmon/12)
-			if 'months since' in ds.time.units:
-				line=ds.time.units
-				stdate=str(int(line.split()[2][:4])+deltastyr)+line.split()[2][-6:]
-				ds['time'] = pd.date_range(stdate, periods=ds.time.shape[0], freq='M')
-
-#	ds1=ds.sel(X=slice(wlo2,elo2),Y=slice(sla2,nla2))
-	ds1_tmp=ds.sel(X=slice(wlo2,elo2),Y=slice(sla2,nla2))
-	ds1=ds1_tmp.reindex(Y=ds1_tmp.Y[::-1]) #Y from N to S
-	Xarr=ds1.X.values
-	Yarr=ds1.Y.values
-	W=ds1.X.shape[0]
-	H=ds1.Y.shape[0]
-	var1=ds1[predictand]
-	units=ds[predictand].units
-	Ti=int(ds.time.dt.year[0])
-	vari = predictand
-	varname = vari
-	if 'True' in np.isnan(var):
-	        var[np.isnan(var)]=-999. #use CPT missing value
-
-	monthdic = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
-	mi=monthdic[tar.split("-")[0]]
-	mf=monthdic[tar.split("-")[1]]
-
-	if mi==str(11):
-		var1_N=var1[(var1.time.dt.month==11)]
-		var1_N1=var1_N.groupby(var1_N.time.dt.year).mean('time').sel(year=slice(Ti,Ti+nyr-2))
-		var1_D=var1[(var1.time.dt.month==12)]
-		var1_D1=var1_D.groupby(var1_D.time.dt.year).mean('time').sel(year=slice(Ti,Ti+nyr-2))
-		var1_J=var1[(var1.time.dt.month==1)]
-		var1_J1=var1_J.groupby(var1_J.time.dt.year).mean('time').sel(year=slice(Ti+1,Ti+nyr-1))
-		var=np.zeros(var1_D1.shape)
-		for i in range(len(var1_D1.year)):
-			var[i,:,:]=(var1_N1[i,:,:]+var1_D1[i,:,:]+var1_J1[i,:,:])/3.
-	elif mi==str(12):
-		var1_D=var1[(var1.time.dt.month==12)]
-		var1_D1=var1_D.groupby(var1_D.time.dt.year).mean('time').sel(year=slice(Ti,Ti+nyr-2))
-		var1_J=var1[(var1.time.dt.month==1)]
-		var1_J1=var1_J.groupby(var1_J.time.dt.year).mean('time').sel(year=slice(Ti+1,Ti+nyr-1))
-		var1_F = var1[(var1.time.dt.month==2)]
-		var1_F1=var1_F.groupby(var1_F.time.dt.year).mean('time').sel(year=slice(Ti+1,Ti+nyr-1))
-		var=np.zeros(var1_D1.shape)
-		for i in range(len(var1_D1.year)):
-			var[i,:,:]=(var1_D1[i,:,:]+var1_J1[i,:,:]+var1_F1[i,:,:])/3.
-	else:
-		var1_season = var1[(var1.time.dt.month>=mi)&(var1.time.dt.month<=mf)]
-		var=var1_season.groupby(var1_season.time.dt.year).mean(dim=('time')).sel(year=slice(Ti+1,Ti+nyr-1))
-	if tar=='Dec-Feb' or tar=='Nov-Jan':  #double check years are sync
-		Ti=Ti
-		xyear=True  #flag a cross-year season
-	else:
-		Ti=Ti+1
-		xyear=False
-
-	T=nyr-1
-	Tarr = np.arange(Ti, Ti+T)
-
-    #Now write the CPT file
-	outfile="usr_"+predictand+"_"+tar+".tsv"
-	f = open(outfile, 'w')
-	f.write("xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n")
-	f.write("cpt:nfields=1\n")
-	for it in range(T):
-		if xyear==True:
-			f.write("cpt:field="+vari+", cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-		else:
-			f.write("cpt:field="+vari+", cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-		np.savetxt(f, Xarr[0:-1], fmt="%.3f",newline='\t')
-		f.write("\n") #next line
-		for iy in range(H):
-			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
-			f.write("\n") #next line
-	f.close()
-
-def readNetCDF_Hindcasts(infile, outfile, wlo1, elo1, sla1, nla1, tgti, tgtf, mon, tar):
-	"""Function to read the user's Hindcasts NetCDF file and write to CPT format.
-
-	PARAMETERS
-	----------
-		Hindcats: a DataArray with dimensions S,M,L,Y,X
-	"""
-	ds=xr.open_dataset(infile,decode_times=False)
-	da=list(ds.coords)
-
-	for i in range(len(da)):
-		if da[i]=='X' or da[i]=='lon' or da[i]=='longitude':
-			ds = ds.rename({da[i]:'X'})
-		if da[i]=='Y' or da[i]=='lat' or da[i]=='latitude':
-			ds = ds.rename({da[i]:'Y'})
-		if da[i]=='S':
-			deltastyr=int(ds[da[i]][0]/12)
-			nmon=ds.S.shape[0]
-			nyr=int(nmon/12)
-		if 'months since' in ds.S.units:
-				line=ds.S.units
-				stdate=str(int(line.split()[2][:4])+deltastyr)+line.split()[2][-6:]
-				ds['S'] = pd.date_range(stdate, periods=ds.S.shape[0], freq='M')
-
-	ds1=ds.sel(X=slice(wlo1,elo1),Y=slice(sla1,nla1),L=slice(float(tgti),float(tgtf))).mean(dim='L',skipna=True)
-	ds2=ds1.mean(dim='M',skipna=True)
-	Xarr=ds2.X.values
-	Yarr=ds2.Y.values
-	W=ds2.X.shape[0]
-	H=ds2.Y.shape[0]
-	a=list(ds)
-
-	var1=ds2[a[0]]
-	units=ds[a[0]].units
-	Ti=1982
-
-	vari = a[0]
-	varname = vari
-	L=0.5*(float(tgtf)+float(tgti))
-
-	monthdic = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
-	S1=monthdic[mon]
-	mi=monthdic[tar.split("-")[0]]
-	mf=monthdic[tar.split("-")[1]]
-
-	var1_stmon=var1[(var1.S.dt.month==int(monthdic[mon]))]
-	var=var1_stmon.groupby(var1_stmon.S.dt.year).mean(dim=('S')).sel(year=slice(1982,2009))
-	var_N2S=var.reindex(Y=var.Y[::-1]) #Y from N to S
-	Yarr=var_N2S.Y.values
-	if tar=='Dec-Feb' or tar=='Nov-Jan':  #double check years are sync
-		xyear=True  #flag a cross-year season
-	else:
-		xyear=False
-	T=2009-1982+1
-	Tarr = np.arange(Ti, Ti+T)
-
-	if 'True' in np.isnan(var):
-		var[np.isnan(var)]=-999. #use CPT missing value
-        #Now write the CPT file
-	outfile="usr_"+a[0]+"_"+tar+"_ini"+mon+".tsv"
-	f = open(outfile, 'w')
-	f.write("xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n")
-	f.write("cpt:nfields=1\n")
-
-	for it in range(T):
-		if xyear==True:
-			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-		else:
-			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-	np.savetxt(f, Xarr, fmt="%.3f",newline='\t')
-	f.write("\n") #next line
-	for iy in range(H):
-		np.savetxt(f,np.r_[Yarr[iy],var_N2S[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
-		f.write("\n") #next line
-	f.close()
-
-def readNetCDF_Forecast(infile, outfile, monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1):
-        """Function to read the user's forecast NetCDF file and write to CPT format.
-
-        PARAMETERS
-        ----------
-                Forecat: a DataArray with dimensions S,M,L,Y,X
-        """
-        ds=xr.open_dataset(infile,decode_times=False)
-        da=list(ds.coords)
-
-        for i in range(len(da)):
-                if da[i]=='X' or da[i]=='lon' or da[i]=='longitude':
-                        ds = ds.rename({da[i]:'X'})
-                if da[i]=='Y' or da[i]=='lat' or da[i]=='latitude':
-                        ds = ds.rename({da[i]:'Y'})
-                if da[i]=='S':
-                        deltastyr=int(ds[da[i]][0]/12)
-                        nmon=ds.S.shape[0]
-                        nyr=int(nmon/12)
-                        if 'months since' in ds.S.units:
-                                line=ds.S.units
-                                stdate=str(int(line.split()[2][:4])+deltastyr)+line.split()[2][-6:]
-                                ds['S'] = pd.date_range(stdate, periods=ds.S.shape[0], freq='M')
-
-        ds1=ds.sel(X=slice(wlo1,elo1),Y=slice(sla1,nla1),L=slice(float(tgti),float(tgtf))).mean(dim='L',skipna=True)
-        ds2=ds1.mean(dim='M',skipna=True)
-        Xarr=ds2.X.values
-        Yarr=ds2.Y.values
-        W=ds2.X.shape[0]
-        H=ds2.Y.shape[0]
-        a=list(ds)
-
-        var1=ds2[a[0]]
-        units=ds[a[0]].units
-        Ti=fyr
-
-        vari = a[0]
-        varname = vari
-        L=0.5*(float(tgtf)+float(tgti))
-
-        monthdic = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
-        S1=monthdic[monf]
-        mi=monthdic[tar.split("-")[0]]
-        mf=monthdic[tar.split("-")[1]]
-
-        var1_stmon=var1[(var1.S.dt.month==int(monthdic[monf]))]
-        var=var1_stmon.groupby(var1_stmon.S.dt.year).mean(dim=('S')).sel(year=fyr)
-        var_N2S=var.reindex(Y=var.Y[::-1])
-        Yarr=var_N2S.Y.values
-        if tar=='Dec-Feb' or tar=='Nov-Jan':  #double check years are sync
-                xyear=True  #flag a cross-year season
-        else:
-                xyear=False
-        T=1
-        Tarr = np.arange(Ti, Ti+T)
-
-        if 'True' in np.isnan(var):
-                var[np.isnan(var)]=-999. #use CPT missing value
-        #Now write the CPT file
-        outfile="usr_fcst_"+a[0]+"_"+tar+"_ini"+monf+str(fyr)+".tsv"
-        f = open(outfile, 'w')
-        f.write("xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n")
-        f.write("cpt:nfields=1\n")
-
-        for it in range(T):
-                if xyear==True:
-                        f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-                else:
-                        f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
-        np.savetxt(f, Xarr, fmt="%.3f",newline='\t')
-        f.write("\n") #next line
-        for iy in range(H):
-                np.savetxt(f,np.r_[Yarr[iy],var_N2S[iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
-                f.write("\n") #next line
-        f.close()
+# def readNetCDF_predictand(infile,outfile, predictand, wlo2, elo2, sla2, nla2, tar):
+# 	"""Function to read the user's predictand NetCDF file and write to CPT format.
+#
+# 	PARAMETERS
+#         ----------
+# 		predictand: a DataArray with dimensions T,Y,X
+# 	"""
+#
+# 	ds=xr.open_dataset(infile,decode_times=False)
+# 	da=list(ds.coords)
+#
+# 	for i in range(len(da)):
+# 		if da[i]=='X' or da[i]=='lon' or da[i]=='longitude':
+# 			ds = ds.rename({da[i]:'X'})
+# 		if da[i]=='Y' or da[i]=='lat' or da[i]=='latitude':
+# 			ds = ds.rename({da[i]:'Y'})
+# 		if da[i]=='T' or da[i]=='time':
+# 			deltastyr=int(ds[da[i]][0]/12)
+# 			ds = ds.rename({da[i]:'time'})
+# 			nmon=ds.time.shape[0]
+# 			nyr=int(nmon/12)
+# 			if 'months since' in ds.time.units:
+# 				line=ds.time.units
+# 				stdate=str(int(line.split()[2][:4])+deltastyr)+line.split()[2][-6:]
+# 				ds['time'] = pd.date_range(stdate, periods=ds.time.shape[0], freq='M')
+#
+# #	ds1=ds.sel(X=slice(wlo2,elo2),Y=slice(sla2,nla2))
+# 	ds1_tmp=ds.sel(X=slice(wlo2,elo2),Y=slice(sla2,nla2))
+# 	ds1=ds1_tmp.reindex(Y=ds1_tmp.Y[::-1]) #Y from N to S
+# 	Xarr=ds1.X.values
+# 	Yarr=ds1.Y.values
+# 	W=ds1.X.shape[0]
+# 	H=ds1.Y.shape[0]
+# 	var1=ds1[predictand]
+# 	units=ds[predictand].units
+# 	Ti=int(ds.time.dt.year[0])
+# 	vari = predictand
+# 	varname = vari
+# 	if 'True' in np.isnan(var):
+# 	        var[np.isnan(var)]=-999. #use CPT missing value
+#
+# 	monthdic = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+# 	mi=monthdic[tar.split("-")[0]]
+# 	mf=monthdic[tar.split("-")[1]]
+#
+# 	if mi==str(11):
+# 		var1_N=var1[(var1.time.dt.month==11)]
+# 		var1_N1=var1_N.groupby(var1_N.time.dt.year).mean('time').sel(year=slice(Ti,Ti+nyr-2))
+# 		var1_D=var1[(var1.time.dt.month==12)]
+# 		var1_D1=var1_D.groupby(var1_D.time.dt.year).mean('time').sel(year=slice(Ti,Ti+nyr-2))
+# 		var1_J=var1[(var1.time.dt.month==1)]
+# 		var1_J1=var1_J.groupby(var1_J.time.dt.year).mean('time').sel(year=slice(Ti+1,Ti+nyr-1))
+# 		var=np.zeros(var1_D1.shape)
+# 		for i in range(len(var1_D1.year)):
+# 			var[i,:,:]=(var1_N1[i,:,:]+var1_D1[i,:,:]+var1_J1[i,:,:])/3.
+# 	elif mi==str(12):
+# 		var1_D=var1[(var1.time.dt.month==12)]
+# 		var1_D1=var1_D.groupby(var1_D.time.dt.year).mean('time').sel(year=slice(Ti,Ti+nyr-2))
+# 		var1_J=var1[(var1.time.dt.month==1)]
+# 		var1_J1=var1_J.groupby(var1_J.time.dt.year).mean('time').sel(year=slice(Ti+1,Ti+nyr-1))
+# 		var1_F = var1[(var1.time.dt.month==2)]
+# 		var1_F1=var1_F.groupby(var1_F.time.dt.year).mean('time').sel(year=slice(Ti+1,Ti+nyr-1))
+# 		var=np.zeros(var1_D1.shape)
+# 		for i in range(len(var1_D1.year)):
+# 			var[i,:,:]=(var1_D1[i,:,:]+var1_J1[i,:,:]+var1_F1[i,:,:])/3.
+# 	else:
+# 		var1_season = var1[(var1.time.dt.month>=mi)&(var1.time.dt.month<=mf)]
+# 		var=var1_season.groupby(var1_season.time.dt.year).mean(dim=('time')).sel(year=slice(Ti+1,Ti+nyr-1))
+# 	if tar=='Dec-Feb' or tar=='Nov-Jan':  #double check years are sync
+# 		Ti=Ti
+# 		xyear=True  #flag a cross-year season
+# 	else:
+# 		Ti=Ti+1
+# 		xyear=False
+#
+# 	T=nyr-1
+# 	Tarr = np.arange(Ti, Ti+T)
+#
+#     #Now write the CPT file
+# 	outfile="usr_"+predictand+"_"+tar+".tsv"
+# 	f = open(outfile, 'w')
+# 	f.write("xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n")
+# 	f.write("cpt:nfields=1\n")
+# 	for it in range(T):
+# 		if xyear==True:
+# 			f.write("cpt:field="+vari+", cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+# 		else:
+# 			f.write("cpt:field="+vari+", cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+# 		np.savetxt(f, Xarr[0:-1], fmt="%.3f",newline='\t')
+# 		f.write("\n") #next line
+# 		for iy in range(H):
+# 			np.savetxt(f,np.r_[Yarr[iy],var[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+# 			f.write("\n") #next line
+# 	f.close()
+#
+# def readNetCDF_Hindcasts(infile, outfile, wlo1, elo1, sla1, nla1, tgti, tgtf, mon, tar):
+# 	"""Function to read the user's Hindcasts NetCDF file and write to CPT format.
+#
+# 	PARAMETERS
+# 	----------
+# 		Hindcats: a DataArray with dimensions S,M,L,Y,X
+# 	"""
+# 	ds=xr.open_dataset(infile,decode_times=False)
+# 	da=list(ds.coords)
+#
+# 	for i in range(len(da)):
+# 		if da[i]=='X' or da[i]=='lon' or da[i]=='longitude':
+# 			ds = ds.rename({da[i]:'X'})
+# 		if da[i]=='Y' or da[i]=='lat' or da[i]=='latitude':
+# 			ds = ds.rename({da[i]:'Y'})
+# 		if da[i]=='S':
+# 			deltastyr=int(ds[da[i]][0]/12)
+# 			nmon=ds.S.shape[0]
+# 			nyr=int(nmon/12)
+# 		if 'months since' in ds.S.units:
+# 				line=ds.S.units
+# 				stdate=str(int(line.split()[2][:4])+deltastyr)+line.split()[2][-6:]
+# 				ds['S'] = pd.date_range(stdate, periods=ds.S.shape[0], freq='M')
+#
+# 	ds1=ds.sel(X=slice(wlo1,elo1),Y=slice(sla1,nla1),L=slice(float(tgti),float(tgtf))).mean(dim='L',skipna=True)
+# 	ds2=ds1.mean(dim='M',skipna=True)
+# 	Xarr=ds2.X.values
+# 	Yarr=ds2.Y.values
+# 	W=ds2.X.shape[0]
+# 	H=ds2.Y.shape[0]
+# 	a=list(ds)
+#
+# 	var1=ds2[a[0]]
+# 	units=ds[a[0]].units
+# 	Ti=1982
+#
+# 	vari = a[0]
+# 	varname = vari
+# 	L=0.5*(float(tgtf)+float(tgti))
+#
+# 	monthdic = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+# 	S1=monthdic[mon]
+# 	mi=monthdic[tar.split("-")[0]]
+# 	mf=monthdic[tar.split("-")[1]]
+#
+# 	var1_stmon=var1[(var1.S.dt.month==int(monthdic[mon]))]
+# 	var=var1_stmon.groupby(var1_stmon.S.dt.year).mean(dim=('S')).sel(year=slice(1982,2009))
+# 	var_N2S=var.reindex(Y=var.Y[::-1]) #Y from N to S
+# 	Yarr=var_N2S.Y.values
+# 	if tar=='Dec-Feb' or tar=='Nov-Jan':  #double check years are sync
+# 		xyear=True  #flag a cross-year season
+# 	else:
+# 		xyear=False
+# 	T=2009-1982+1
+# 	Tarr = np.arange(Ti, Ti+T)
+#
+# 	if 'True' in np.isnan(var):
+# 		var[np.isnan(var)]=-999. #use CPT missing value
+#         #Now write the CPT file
+# 	outfile="usr_"+a[0]+"_"+tar+"_ini"+mon+".tsv"
+# 	f = open(outfile, 'w')
+# 	f.write("xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n")
+# 	f.write("cpt:nfields=1\n")
+#
+# 	for it in range(T):
+# 		if xyear==True:
+# 			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+# 		else:
+# 			f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+# 	np.savetxt(f, Xarr, fmt="%.3f",newline='\t')
+# 	f.write("\n") #next line
+# 	for iy in range(H):
+# 		np.savetxt(f,np.r_[Yarr[iy],var_N2S[it,iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+# 		f.write("\n") #next line
+# 	f.close()
+#
+# def readNetCDF_Forecast(infile, outfile, monf, fyr, tgti, tgtf, tar, wlo1, elo1, sla1, nla1):
+#         """Function to read the user's forecast NetCDF file and write to CPT format.
+#
+#         PARAMETERS
+#         ----------
+#                 Forecat: a DataArray with dimensions S,M,L,Y,X
+#         """
+#         ds=xr.open_dataset(infile,decode_times=False)
+#         da=list(ds.coords)
+#
+#         for i in range(len(da)):
+#                 if da[i]=='X' or da[i]=='lon' or da[i]=='longitude':
+#                         ds = ds.rename({da[i]:'X'})
+#                 if da[i]=='Y' or da[i]=='lat' or da[i]=='latitude':
+#                         ds = ds.rename({da[i]:'Y'})
+#                 if da[i]=='S':
+#                         deltastyr=int(ds[da[i]][0]/12)
+#                         nmon=ds.S.shape[0]
+#                         nyr=int(nmon/12)
+#                         if 'months since' in ds.S.units:
+#                                 line=ds.S.units
+#                                 stdate=str(int(line.split()[2][:4])+deltastyr)+line.split()[2][-6:]
+#                                 ds['S'] = pd.date_range(stdate, periods=ds.S.shape[0], freq='M')
+#
+#         ds1=ds.sel(X=slice(wlo1,elo1),Y=slice(sla1,nla1),L=slice(float(tgti),float(tgtf))).mean(dim='L',skipna=True)
+#         ds2=ds1.mean(dim='M',skipna=True)
+#         Xarr=ds2.X.values
+#         Yarr=ds2.Y.values
+#         W=ds2.X.shape[0]
+#         H=ds2.Y.shape[0]
+#         a=list(ds)
+#
+#         var1=ds2[a[0]]
+#         units=ds[a[0]].units
+#         Ti=fyr
+#
+#         vari = a[0]
+#         varname = vari
+#         L=0.5*(float(tgtf)+float(tgti))
+#
+#         monthdic = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+#         S1=monthdic[monf]
+#         mi=monthdic[tar.split("-")[0]]
+#         mf=monthdic[tar.split("-")[1]]
+#
+#         var1_stmon=var1[(var1.S.dt.month==int(monthdic[monf]))]
+#         var=var1_stmon.groupby(var1_stmon.S.dt.year).mean(dim=('S')).sel(year=fyr)
+#         var_N2S=var.reindex(Y=var.Y[::-1])
+#         Yarr=var_N2S.Y.values
+#         if tar=='Dec-Feb' or tar=='Nov-Jan':  #double check years are sync
+#                 xyear=True  #flag a cross-year season
+#         else:
+#                 xyear=False
+#         T=1
+#         Tarr = np.arange(Ti, Ti+T)
+#
+#         if 'True' in np.isnan(var):
+#                 var[np.isnan(var)]=-999. #use CPT missing value
+#         #Now write the CPT file
+#         outfile="usr_fcst_"+a[0]+"_"+tar+"_ini"+monf+str(fyr)+".tsv"
+#         f = open(outfile, 'w')
+#         f.write("xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n")
+#         f.write("cpt:nfields=1\n")
+#
+#         for it in range(T):
+#                 if xyear==True:
+#                         f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+str(Tarr[it]+1)+"-"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+#                 else:
+#                         f.write("cpt:field="+vari+", cpt:L="+str(L)+" months, cpt:S="+str(Tarr[it])+"-"+S1+"-01T00:00, cpt:T="+str(Tarr[it])+"-"+mi+"/"+mf+", cpt:nrow="+str(H)+", cpt:ncol="+str(W)+", cpt:row=Y, cpt:col=X, cpt:units="+units+", cpt:missing=-999.\n")
+#         np.savetxt(f, Xarr, fmt="%.3f",newline='\t')
+#         f.write("\n") #next line
+#         for iy in range(H):
+#                 np.savetxt(f,np.r_[Yarr[iy],var_N2S[iy,0:]],fmt="%.3f", newline='\t')  #excise extra line
+#                 f.write("\n") #next line
+#         f.close()
 
 def GetHindcasts(wlo1, elo1, sla1, nla1, tgti, tgtf, mon, os, tar, model, force_download):
 	if not force_download:
