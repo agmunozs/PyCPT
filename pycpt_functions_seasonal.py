@@ -1073,7 +1073,7 @@ def readNetCDF_predictand(infile,outfile, predictand, wlo2, elo2, sla2, nla2, ta
 	T=nyr-1
 	Tarr = np.arange(Ti, Ti+T)
 
-        #Now write the CPT file
+    #Now write the CPT file
 	outfile="usr_"+predictand+"_"+tar+".tsv"
 	f = open(outfile, 'w')
 	f.write("xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n")
