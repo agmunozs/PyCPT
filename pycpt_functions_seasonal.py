@@ -875,8 +875,8 @@ def pltprobff(models,predictand,thrs,ntrain,lon,lat,loni,lone,lati,late,fprefix,
 			TD= 1  #not used
 
 	#Find the gridbox:
-	lonrange = np.linspace(loni, loni+W*XD,num=W)
-	latrange = np.linspace(lati+H*YD, lati, num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
+	lonrange = np.linspace(loni, loni+(W-1)*XD,num=W)
+	latrange = np.linspace(lati+(H-1)*YD, lati, num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
 	lon_grid, lat_grid = np.meshgrid(lonrange, latrange)
 	a = abs(lat_grid-lat)+abs(lon_grid-lon)
 	i,j = np.unravel_index(a.argmin(),a.shape)   #i:latitude   j:longitude

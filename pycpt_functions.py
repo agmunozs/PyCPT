@@ -538,8 +538,8 @@ def skilltab(score,wknam,lon1,lat1,lat2,lon2,loni,lone,lati,late,fprefix,mpref,t
 			YD= float(line.split()[4])
 
 	#Find the gridbox:
-	lonrange = np.linspace(loni, loni+W*XD,num=W)
-	latrange = np.linspace(lati+H*YD, lati, num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
+	lonrange = np.linspace(loni, loni+(W-1)*XD,num=W)
+	latrange = np.linspace(lati+(H-1)*YD, lati, num=H)  #need to reverse the latitudes because of CPT (GrADS YREV option)
 	lon_grid, lat_grid = np.meshgrid(lonrange, latrange)
 	#first point
 	a = abs(lat_grid-lat1)+abs(lon_grid-lon1)
